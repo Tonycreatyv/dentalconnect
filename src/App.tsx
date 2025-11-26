@@ -795,15 +795,15 @@ export default function App() {
                                 setChats(chats.map(c => c.id === chat.id ? {...c, name: editName} : c));
                                 setEditingChat(null);
                               }}
-                              className="p-2 bg-slate-900 rounded-lg hover:bg-slate-800 transition"
+                              className="p-2 bg-green-600 rounded-lg hover:bg-green-700 transition"
                             >
-                              <CheckCircle size={16} className="text-slate-900" />
+                              <CheckCircle size={16} className="text-white" />
                             </button>
                             <button
                               onClick={() => setEditingChat(null)}
-                              className="p-2 bg-slate-200 rounded-lg hover:bg-slate-300 transition"
+                              className="p-2 bg-slate-600 rounded-lg hover:bg-slate-700 transition"
                             >
-                              <X size={16} className="text-slate-900" />
+                              <X size={16} className="text-white" />
                             </button>
                           </div>
                         ) : (
@@ -833,9 +833,9 @@ export default function App() {
                                 setEditingChat(chat.id);
                                 setEditName(chat.name);
                               }}
-                              className="absolute top-2 right-2 p-1.5 bg-slate-700/80 rounded-lg opacity-0 group-hover:opacity-100 transition hover:bg-gray-600"
+                              className="absolute top-2 right-2 p-1.5 bg-slate-700/80 rounded-lg opacity-0 group-hover:opacity-100 transition hover:bg-slate-600"
                             >
-                              <Edit2 size={13} className="text-slate-900" />
+                              <Edit2 size={13} className="text-white" />
                             </button>
                           </button>
                         )}
@@ -857,7 +857,7 @@ export default function App() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm md:text-base font-semibold text-slate-900 leading-tight">{selected.name}</h3>
-                        <p className="text-xs text-slate-800 leading-tight">en línea</p>
+                        <p className="text-xs text-slate-500 leading-tight">en línea</p>
                       </div>
                     </div>
                     <div
