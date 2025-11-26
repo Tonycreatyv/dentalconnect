@@ -856,8 +856,8 @@ export default function App() {
                         {selected.name.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm md:text-base font-semibold text-slate-900 leading-tight">{selected.name}</h3>
-                        <p className="text-xs text-slate-500 leading-tight">en línea</p>
+                        <h3 className="text-sm md:text-base font-semibold leading-tight" style={{color: '#0f172a'}}>{selected.name}</h3>
+                        <p className="text-xs leading-tight" style={{color: '#64748b'}}>en línea</p>
                       </div>
                     </div>
                     <div
