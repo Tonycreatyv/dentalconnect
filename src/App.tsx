@@ -203,11 +203,11 @@ function RootApp() {
       <div className="min-h-screen flex items-center justify-center p-4" style={{backgroundColor: '#0a0b0d'}}>
         <div className="w-full max-w-md space-y-4">
           <div className="text-center">
-            <div className="w-24 h-24 mx-auto rounded-3xl bg-black flex items-center justify-center shadow-xl">
+            <div className="w-56 h-56 mx-auto rounded-[32px] bg-gradient-to-br from-slate-900 to-black flex items-center justify-center shadow-2xl shadow-indigo-500/30 border border-slate-800">
               <img
                 src="/creatyv image.png"
                 alt="CREATYV Logo"
-                className="w-20 h-20 object-contain"
+                className="w-44 h-44 object-contain drop-shadow-2xl"
               />
             </div>
           </div>
