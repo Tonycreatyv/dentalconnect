@@ -450,9 +450,9 @@ function RootApp() {
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition ${
-                theme === 'dark'
-                  ? 'border-slate-700 bg-slate-900 text-slate-200 hover:border-sky-400/50'
-                  : 'border-slate-200 bg-white text-slate-700 hover:border-sky-400/50 shadow-sm'
+                isDark
+                  ? 'border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 shadow-sm'
               }`}
             >
               {theme === 'dark' ? '🌙 Modo oscuro' : '☀️ Modo claro'}
@@ -461,12 +461,12 @@ function RootApp() {
               onClick={() => setAutoMode(!autoMode)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition ${
                 autoMode
-                  ? 'border-emerald-500/40 text-emerald-100 bg-emerald-500/10 hover:bg-emerald-500/20'
-                  : 'border-amber-500/40 text-amber-100 bg-amber-500/10 hover:bg-amber-500/20'
+                  ? isDark ? 'border-slate-600 bg-slate-900 text-slate-200' : 'border-slate-200 bg-white text-slate-700 shadow-sm'
+                  : isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-slate-200 bg-white text-slate-700 shadow-sm'
               }`}
             >
               <Zap size={16} />
-              {autoMode ? 'Automático ON' : 'Manual'}
+              {autoMode ? 'Automático' : 'Manual'}
             </button>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
@@ -522,14 +522,7 @@ function RootApp() {
         )}
 
         {tab === 'lobby' && (
-          <div className={`h-full flex overflow-hidden relative ${isDark ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' : 'bg-gradient-to-br from-slate-50 via-white to-slate-100'}`}>
-            {isDark && (
-              <div className="absolute inset-0 opacity-20">
-                <div className="absolute top-20 left-20 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl" style={{animationDelay: '1s'}}></div>
-              </div>
-            )}
-
+          <div className={`h-full flex overflow-hidden relative ${isDark ? 'bg-slate-950' : 'bg-[#f5f6f8]'}`}>
             <div className="flex-1 overflow-y-auto relative z-10">
               <div className="max-w-6xl mx-auto px-4 py-6 md:p-8">
                 <div className="mb-8">
@@ -551,12 +544,12 @@ function RootApp() {
 
                     <div className="space-y-2.5">
                       {[
-                        { icon: Calendar, text: 'Juan Pérez', desc: 'Consulta general', count: '1', tone: 'accent', action: 'appointments' },
-                        { icon: CheckCircle, text: 'María López', desc: 'Revisión completada', count: '✓', tone: 'success', action: 'appointments' },
-                        { icon: MessageCircle, text: 'Carlos Rodríguez', desc: 'Preguntó sobre horarios', count: '2', tone: 'info', action: 'messages' },
-                        { icon: DollarSign, text: 'Ana García', desc: '$150 procesado', count: '✓', tone: 'success', action: 'payments' },
-                        { icon: User, text: 'Roberto Martínez', desc: 'Nuevo registro', count: '1', tone: 'info', action: 'patients' },
-                        { icon: AlertCircle, text: 'Pedro Sánchez', desc: 'Cita en 30 min', count: '!', tone: 'warning', action: 'appointments' }
+                        { icon: Calendar, text: 'Juan Pérez', desc: 'Consulta general', count: '1', action: 'appointments' },
+                        { icon: CheckCircle, text: 'María López', desc: 'Revisión completada', count: '✓', action: 'appointments' },
+                        { icon: MessageCircle, text: 'Carlos Rodríguez', desc: 'Preguntó sobre horarios', count: '2', action: 'messages' },
+                        { icon: DollarSign, text: 'Ana García', desc: '$150 procesado', count: '✓', action: 'payments' },
+                        { icon: User, text: 'Roberto Martínez', desc: 'Nuevo registro', count: '1', action: 'patients' },
+                        { icon: AlertCircle, text: 'Pedro Sánchez', desc: 'Cita en 30 min', count: '!', action: 'appointments' }
                       ].slice(0, isMobile && !showAllLobbyNotifications ? 3 : 6).map((notif, i) => (
                         <div
                           key={i}
@@ -568,20 +561,8 @@ function RootApp() {
                         >
                           <div className="relative backdrop-blur-2xl rounded-full px-4 py-3 border border-white/10 hover:border-white/20 transition-all duration-300 hover:bg-white/10">
                             <div className="flex items-center gap-3.5">
-                              <div className={`
-                                w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
-                                ${notif.tone === 'accent' ? 'bg-sky-500/15' : ''}
-                                ${notif.tone === 'success' ? 'bg-emerald-500/15' : ''}
-                                ${notif.tone === 'info' ? 'bg-indigo-500/15' : ''}
-                                ${notif.tone === 'warning' ? 'bg-amber-500/15' : ''}
-                                group-hover:scale-110 transition-transform
-                              `}>
-                                <notif.icon size={16} className={`
-                                  ${notif.tone === 'accent' ? 'text-sky-300' : ''}
-                                  ${notif.tone === 'success' ? 'text-emerald-300' : ''}
-                                  ${notif.tone === 'info' ? 'text-indigo-300' : ''}
-                                  ${notif.tone === 'warning' ? 'text-amber-300' : ''}
-                                `} strokeWidth={2.5} />
+                              <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'} group-hover:scale-110 transition-transform`}>
+                                <notif.icon size={16} strokeWidth={2.5} />
                               </div>
 
                               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -589,15 +570,7 @@ function RootApp() {
                                 <span className="text-slate-400 text-xs truncate">{notif.desc}</span>
                               </div>
 
-                              <div
-                                className={`
-                                  min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold
-                                  ${notif.tone === 'accent' ? 'bg-sky-500 text-white' : ''}
-                                  ${notif.tone === 'success' ? 'bg-emerald-500 text-white' : ''}
-                                  ${notif.tone === 'info' ? 'bg-indigo-500 text-white' : ''}
-                                  ${notif.tone === 'warning' ? 'bg-amber-500 text-white' : ''}
-                                `}
-                              >
+                              <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-slate-800 text-slate-200 border border-slate-700' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
                                 {notif.count}
                               </div>
                             </div>
@@ -655,23 +628,8 @@ function RootApp() {
                               </div>
 
                               {patient.status === 'complete' && (
-                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700'}`}>
+                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-slate-800 text-slate-200 border border-slate-700' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
                                   ✓
-                                </div>
-                              )}
-                              {patient.status === 'missing-email' && (
-                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'}`}>
-                                  @
-                                </div>
-                              )}
-                              {patient.status === 'missing-phone' && (
-                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'}`}>
-                                  #
-                                </div>
-                              )}
-                              {patient.status === 'missing-all' && (
-                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700'}`}>
-                                  !
                                 </div>
                               )}
                             </div>
@@ -698,45 +656,36 @@ function RootApp() {
                   ].map((stat, i) => (
                     <button
                       key={i}
-                    onClick={() => setTab(stat.action)}
-                    className="
-                      group bg-gradient-to-br from-slate-800/80 to-slate-900/90 backdrop-blur-xl
-                      rounded-2xl p-6 border border-slate-700 hover:border-sky-400/50
-                      transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-sky-500/15
-                    "
-                    style={{ backgroundColor: 'rgba(21, 24, 32, 0.9)' }}
-                  >
-                    <div
-                      className="
-                        w-12 h-12 bg-gradient-to-br from-sky-500 to-indigo-600
-                        rounded-xl flex items-center justify-center mb-3 mx-auto
-                        group-hover:scale-105 transition-transform shadow-lg shadow-sky-500/30
-                      "
+                      onClick={() => setTab(stat.action)}
+                      className={`
+                        group rounded-2xl p-6 text-left transition border
+                        ${isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}
+                      `}
                     >
-                        <stat.icon size={24} className="text-white" strokeWidth={2.5} />
+                      <div
+                        className={`
+                          w-11 h-11 rounded-xl flex items-center justify-center mb-3
+                          ${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-800'}
+                        `}
+                      >
+                        <stat.icon size={22} strokeWidth={2.4} />
                       </div>
-                      <p className="text-3xl font-black text-white mb-1">{stat.value}</p>
-                      <p className="text-sm text-slate-400">{stat.label}</p>
+                      <p className={`text-3xl font-black mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{stat.value}</p>
+                      <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm`}>{stat.label}</p>
                     </button>
                   ))}
                 </div>
 
                 <div className="mt-6 grid lg:grid-cols-2 gap-4">
-                  <div
-                    className={`rounded-2xl border p-4 space-y-3 ${
-                      theme === 'dark'
-                        ? 'bg-slate-900/90 border-slate-800'
-                        : 'bg-white border-slate-200 shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                          Modo automático (n8n)
-                        </p>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
-                          Respuestas, recordatorios y confirmaciones vía WhatsApp + n8n.
-                        </p>
+                    <div className={`rounded-2xl border p-4 space-y-3 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className={`text-sm font-semibold ${textMain}`}>
+                            Modo automático (n8n)
+                          </p>
+                          <p className={`text-xs ${textSub}`}>
+                            Respuestas, recordatorios y confirmaciones vía WhatsApp + n8n.
+                          </p>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`text-xs px-2 py-1 rounded-full border ${
@@ -760,11 +709,11 @@ function RootApp() {
                         <div
                           key={item.label}
                           className={`rounded-xl px-3 py-2 border ${
-                            theme === 'dark' ? 'border-slate-800 bg-slate-800/60 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-700'
+                            isDark ? 'border-slate-800 bg-slate-900 text-slate-200' : 'border-slate-200 bg-white text-slate-700'
                           }`}
                         >
                           <p className="font-semibold">{item.label}</p>
-                          <p className={`${theme === 'dark' ? 'text-sky-300' : 'text-sky-700'} font-semibold`}>{item.status}</p>
+                          <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} font-semibold`}>{item.status}</p>
                         </div>
                       ))}
                     </div>
@@ -773,19 +722,13 @@ function RootApp() {
                     </div>
                   </div>
 
-                  <div
-                    className={`rounded-2xl border p-4 space-y-3 ${
-                      theme === 'dark'
-                        ? 'bg-slate-900/90 border-slate-800'
-                        : 'bg-white border-slate-200 shadow-sm'
-                    }`}
-                  >
+                  <div className={`rounded-2xl border p-4 space-y-3 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                        <p className={`text-sm font-semibold ${textMain}`}>
                           Integraciones CRM y canales
                         </p>
-                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <p className={`text-xs ${textSub}`}>
                           Conecta tu CRM o usa Supabase como HUB de datos.
                         </p>
                       </div>
@@ -803,13 +746,13 @@ function RootApp() {
                         <div
                           key={item.name}
                           className={`rounded-xl px-3 py-2 border ${
-                            theme === 'dark' ? 'border-slate-800 bg-slate-800/60 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-700'
+                            isDark ? 'border-slate-800 bg-slate-900 text-slate-200' : 'border-slate-200 bg-white text-slate-700'
                           } flex items-center justify-between`}
                         >
                           <span>{item.name}</span>
                           <span className={item.status === 'Conectado'
-                            ? `${theme === 'dark' ? 'text-emerald-300' : 'text-emerald-700'} font-semibold`
-                            : `${theme === 'dark' ? 'text-amber-300' : 'text-amber-700'} font-semibold`
+                            ? `${isDark ? 'text-slate-300' : 'text-slate-600'} font-semibold`
+                            : `${isDark ? 'text-slate-400' : 'text-slate-500'} font-semibold`
                           }>
                             {item.status}
                           </span>
@@ -959,7 +902,7 @@ function RootApp() {
                           <div className={`relative max-w-[75%] md:max-w-sm px-3 py-2 shadow-sm ${
                             m.from === 'user'
                               ? `${isDark ? 'bg-slate-800 border border-slate-700 text-white' : 'bg-white border border-slate-200 text-slate-900'} rounded-r-lg rounded-tl-lg`
-                              : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-l-lg rounded-tr-lg'
+                              : `${isDark ? 'bg-slate-800 border border-slate-700 text-white' : 'bg-slate-900 text-white'} rounded-l-lg rounded-tr-lg`
                           }`}>
                             <p className="text-xs md:text-sm leading-relaxed">{m.text}</p>
                             <div className="flex items-center justify-end gap-1 mt-1">
@@ -1041,7 +984,7 @@ function RootApp() {
                 <div className="grid lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-3">
                     {schedule.map((item) => (
-                      <div key={item.id} className={`rounded-2xl p-4 flex items-center gap-4 hover:border-indigo-500/40 transition border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                      <div key={item.id} className={`rounded-2xl p-4 flex items-center gap-4 transition border ${isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/30 to-teal-500/30 flex items-center justify-center text-white font-bold">
                           <Clock size={20} />
                         </div>
@@ -1157,7 +1100,7 @@ function RootApp() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 {patients.map((patient, idx) => (
-                  <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 hover:border-indigo-500/40 transition">
+                  <div key={idx} className={`rounded-2xl p-4 flex flex-col gap-3 transition border ${isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500/40 to-teal-500/40 text-white font-bold flex items-center justify-center">
@@ -1249,12 +1192,7 @@ function RootApp() {
                         {pay.patient}
                       </span>
                       <span className="text-white font-semibold">${pay.amount}</span>
-                      <span className={`
-                        text-xs px-2 py-1 rounded-full border justify-self-start
-                        ${pay.status === 'pagado' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' : ''}
-                        ${pay.status === 'pendiente' ? 'bg-amber-500/20 text-amber-200 border-amber-500/40' : ''}
-                        ${pay.status === 'reembolsado' ? 'bg-slate-800 text-slate-300 border-slate-700' : ''}
-                      `}>
+                      <span className="text-xs px-2 py-1 rounded-full border justify-self-start bg-slate-800 text-slate-200 border-slate-700">
                         {pay.status}
                       </span>
                       <span className="text-slate-300">{pay.method}</span>
@@ -1285,18 +1223,18 @@ function RootApp() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-4 gap-3">
-                {reportCards.map((card, idx) => (
-                  <div key={idx} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-${card.color}-500/30 to-${card.color}-600/30 flex items-center justify-center`}>
-                      <card.icon size={18} className="text-white" />
+                    <div className="grid md:grid-cols-4 gap-3">
+                      {reportCards.map((card, idx) => (
+                        <div key={idx} className={`rounded-2xl p-4 space-y-2 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
+                            <card.icon size={18} />
+                          </div>
+                          <p className={`${textSub} text-xs`}>{card.title}</p>
+                          <p className={`${textMain} text-2xl font-black`}>{card.value}</p>
+                          <p className={`${isDark ? 'text-slate-300' : 'text-slate-600'} text-xs font-semibold`}>{card.change} vs mes anterior</p>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-slate-400 text-xs">{card.title}</p>
-                    <p className="text-white text-2xl font-black">{card.value}</p>
-                    <p className="text-emerald-300 text-xs font-semibold">{card.change} vs mes anterior</p>
-                  </div>
-                ))}
-              </div>
 
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
                 <div className="flex items-center justify-between">
@@ -1345,23 +1283,23 @@ function RootApp() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-4 gap-3">
-                {[
-                  { label: 'Mensajes', value: liveStats.messages, icon: MessageCircle, color: 'indigo' },
-                  { label: 'Citas activas', value: liveStats.appointments, icon: Calendar, color: 'teal' },
-                  { label: 'Pacientes activos', value: liveStats.activePatients, icon: Users, color: 'blue' },
-                  { label: 'Tasa respuesta', value: `${liveStats.responseRate.toFixed(1)}%`, icon: TrendingUp, color: 'emerald' }
-                ].map((stat, idx) => (
-                  <div key={idx} className={`bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2`}>
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-${stat.color}-500/30 to-${stat.color}-600/30 flex items-center justify-center`}>
-                      <stat.icon size={18} className="text-white" />
+                <div className="grid md:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Mensajes', value: liveStats.messages, icon: MessageCircle },
+                    { label: 'Citas activas', value: liveStats.appointments, icon: Calendar },
+                    { label: 'Pacientes activos', value: liveStats.activePatients, icon: Users },
+                    { label: 'Tasa respuesta', value: `${liveStats.responseRate.toFixed(1)}%`, icon: TrendingUp }
+                  ].map((stat, idx) => (
+                    <div key={idx} className={`rounded-2xl p-4 space-y-2 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
+                        <stat.icon size={18} />
+                      </div>
+                      <p className={`${textSub} text-xs`}>{stat.label}</p>
+                      <p className={`${textMain} text-2xl font-black`}>{stat.value}</p>
+                      <p className={`${isDark ? 'text-slate-400' : 'text-slate-500'} text-xs font-semibold`}>Tiempo real</p>
                     </div>
-                    <p className="text-slate-400 text-xs">{stat.label}</p>
-                    <p className="text-white text-2xl font-black">{stat.value}</p>
-                    <p className="text-emerald-300 text-xs font-semibold">Tiempo real</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
