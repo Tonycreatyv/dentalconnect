@@ -41,7 +41,8 @@ function RootApp() {
   const [dashboardTab, setDashboardTab] = useState('overview');
   const [settingsTab, setSettingsTab] = useState('general');
   const [appointmentsView, setAppointmentsView] = useState<'calendar' | 'list'>('calendar');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [calendarMode, setCalendarMode] = useState<'dia' | 'semana' | 'mes' | 'año'>('semana');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [autoMode, setAutoMode] = useState(true);
   const [selected, setSelected] = useState<{id: number; name: string; msg: string; time: string; unread: number} | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -171,11 +172,6 @@ function RootApp() {
     { from: 'bot', text: '¿Mañana a las 2pm?', time: '10:33' }
   ] : [];
 
-  const appts = [
-    { name: 'Juan Pérez', service: 'Limpieza', date: '15 Dic', time: '10:00 AM', status: 'confirmada' },
-    { name: 'María López', service: 'Consulta', date: '16 Dic', time: '2:00 PM', status: 'confirmada' },
-    { name: 'Ana García', service: 'Extracción', date: '17 Dic', time: '9:30 AM', status: 'pendiente' }
-  ];
 
   const login = (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,7 +208,7 @@ function RootApp() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl p-5 backdrop-blur">
+            <div className="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl p-5 backdrop-blur">
             <div className="flex items-center justify-between mb-4">
               <p className="text-white font-semibold text-lg">{loginMode ? 'Iniciar sesión' : 'Crear cuenta'}</p>
               <button
@@ -522,158 +518,132 @@ function RootApp() {
         )}
 
         {tab === 'lobby' && (
-          <div className={`h-full flex overflow-hidden relative ${isDark ? 'bg-slate-950' : 'bg-[#f5f6f8]'}`}>
+          <div className={`h-full flex overflow-hidden relative ${isDark ? 'bg-slate-950' : 'bg-[#f4f5f7]'}`}>
+            <div className="absolute inset-0 pointer-events-none opacity-20" style={{backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(79,70,229,0.08), transparent 35%), radial-gradient(circle at 80% 0%, rgba(99,102,241,0.08), transparent 35%)'}}></div>
+            <div className="absolute inset-0 pointer-events-none opacity-25 blur-3xl" style={{backgroundImage: 'radial-gradient(circle at 60% 30%, rgba(99,102,241,0.18), transparent 40%), radial-gradient(circle at 30% 70%, rgba(15,23,42,0.18), transparent 45%)'}}></div>
+            <div className="absolute right-6 bottom-6 w-64 h-64 pointer-events-none opacity-30">
+              <div className="w-full h-full rounded-[28px] bg-gradient-to-br from-slate-200 via-white to-indigo-100 shadow-2xl shadow-indigo-500/15" style={{transform: 'rotate(-8deg) skew(-4deg)'}}></div>
+              <div className="absolute inset-6 rounded-3xl bg-gradient-to-br from-indigo-500/10 to-transparent border border-white/30 backdrop-blur-sm"></div>
+            </div>
             <div className="flex-1 overflow-y-auto relative z-10">
               <div className="max-w-6xl mx-auto px-4 py-6 md:p-8">
                 <div className="mb-8">
-                  <h1 className="text-2xl md:text-4xl font-black text-white mb-2">
-                    Bienvenido, <span className="text-indigo-400">{clinic.name}</span>
+                  <h1 className={`text-2xl md:text-4xl font-black ${textMain} mb-2`}>
+                    Bienvenido, <span className={isDark ? 'text-indigo-300' : 'text-slate-700'}>{clinic.name}</span>
                   </h1>
-                  <p className="text-slate-400">Aquí está lo que está sucediendo hoy</p>
+                  <p className={textSub}>Aquí está lo que está sucediendo hoy</p>
                 </div>
 
-                {/* Continue with lobby content but I'll keep it the same as before for brevity */}
-                <div className="grid lg:grid-cols-2 gap-4 md:gap-6 mb-8">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-white">Actualizaciones</h2>
-                      <div className="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-xs font-bold px-3 py-1.5 rounded-full">
-                        4 nuevas
-                      </div>
+                <div className="grid lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+                  <div className={`lg:col-span-2 rounded-2xl p-5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className={`text-xl font-semibold ${textMain}`}>Actualizaciones</h2>
+                      <div className={`${textSub} text-xs`}>4 nuevas</div>
                     </div>
-
                     <div className="space-y-2.5">
                       {[
                         { icon: Calendar, text: 'Juan Pérez', desc: 'Consulta general', count: '1', action: 'appointments' },
                         { icon: CheckCircle, text: 'María López', desc: 'Revisión completada', count: '✓', action: 'appointments' },
                         { icon: MessageCircle, text: 'Carlos Rodríguez', desc: 'Preguntó sobre horarios', count: '2', action: 'messages' },
-                        { icon: DollarSign, text: 'Ana García', desc: '$150 procesado', count: '✓', action: 'payments' },
-                        { icon: User, text: 'Roberto Martínez', desc: 'Nuevo registro', count: '1', action: 'patients' },
-                        { icon: AlertCircle, text: 'Pedro Sánchez', desc: 'Cita en 30 min', count: '!', action: 'appointments' }
-                      ].slice(0, isMobile && !showAllLobbyNotifications ? 3 : 6).map((notif, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setTab(notif.action)}
-                          className="group relative cursor-pointer"
-                          style={{
-                            animation: `slideInLeft 0.5s ease-out ${i * 0.1}s both`
-                          }}
-                        >
-                          <div className="relative backdrop-blur-2xl rounded-full px-4 py-3 border border-white/10 hover:border-white/20 transition-all duration-300 hover:bg-white/10">
-                            <div className="flex items-center gap-3.5">
-                              <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'} group-hover:scale-110 transition-transform`}>
-                                <notif.icon size={16} strokeWidth={2.5} />
-                              </div>
-
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className="text-white font-semibold text-sm">{notif.text}</span>
-                                <span className="text-slate-400 text-xs truncate">{notif.desc}</span>
-                              </div>
-
-                              <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-slate-800 text-slate-200 border border-slate-700' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-                                {notif.count}
-                              </div>
+                        { icon: DollarSign, text: 'Ana García', desc: '$150 procesado', count: '✓', action: 'payments' }
+                      ].map((notif, i) => (
+                        <div key={i} onClick={() => setTab(notif.action)} className={`rounded-xl p-3 border cursor-pointer transition ${isDark ? 'border-slate-800 hover:border-slate-700' : 'border-slate-200 hover:border-slate-300'}`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'} w-9 h-9 rounded-lg flex items-center justify-center`}>
+                              <notif.icon size={16} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`${textMain} text-sm font-semibold`}>{notif.text}</p>
+                              <p className={`${textSub} text-xs truncate`}>{notif.desc}</p>
+                            </div>
+                            <div className={`${isDark ? 'bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-100 text-slate-700 border-slate-200'} min-w-[24px] h-6 rounded-full border text-xs font-bold flex items-center justify-center`}>
+                              {notif.count}
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
-
                     {isMobile && (
                       <button
                         onClick={() => setShowAllLobbyNotifications(!showAllLobbyNotifications)}
-                        className="w-full py-3 backdrop-blur-2xl border border-white/10 hover:border-white/20 hover:bg-white/10 text-white font-semibold rounded-full transition-all"
+                        className={`w-full mt-3 py-3 rounded-xl border text-sm font-semibold ${isDark ? 'border-slate-800 text-white' : 'border-slate-200 text-slate-800'}`}
                       >
-                        {showAllLobbyNotifications ? 'Ver menos' : 'Ver más actualizaciones'}
+                        {showAllLobbyNotifications ? 'Ver menos' : 'Ver más'}
                       </button>
                     )}
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-white">Pacientes</h2>
-                      <div className="bg-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                        156 total
-                      </div>
+                  <div className={`rounded-2xl p-5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className={`text-xl font-semibold ${textMain}`}>Pacientes</h2>
+                      <div className={`${textSub} text-xs`}>156 total</div>
                     </div>
-
                     <div className="space-y-2.5">
                       {[
-                        { name: 'Juan Pérez', status: 'complete', info: '555-0123' },
-                        { name: 'María López', status: 'missing-email', info: '555-0124' },
-                        { name: 'Carlos Rodríguez', status: 'missing-phone', info: 'carlos@email.com' },
-                        { name: 'Ana García', status: 'complete', info: '555-0126' },
-                        { name: 'Roberto Martínez', status: 'missing-email', info: '555-0127' },
-                        { name: 'Pedro Sánchez', status: 'missing-all', info: 'Sin datos' }
-                      ].slice(0, isMobile ? 3 : 6).map((patient, i) => (
-                        <div
-                          key={i}
-                          onClick={() => setTab('patients')}
-                          className="group relative cursor-pointer"
-                          style={{
-                            animation: `slideInRight 0.5s ease-out ${i * 0.1}s both`
-                          }}
-                        >
-                        <div className={`relative backdrop-blur-2xl rounded-full px-4 py-3 border transition-all duration-300 ${
-                          isDark ? 'border-white/10 hover:border-white/20 hover:bg-white/10' : 'border-slate-200 hover:border-slate-300 bg-white'
-                        }`}>
-                            <div className="flex items-center gap-3.5">
-                              <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-sky-500/20 to-indigo-500/20 group-hover:scale-110 transition-transform ${isDark ? '' : 'text-indigo-700'}`}>
-                                <span className={`${isDark ? 'text-sky-200' : 'text-indigo-700'} font-bold text-sm`}>{patient.name.charAt(0)}</span>
-                              </div>
-
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className={`${isDark ? 'text-white' : 'text-slate-900'} font-semibold text-sm`}>{patient.name}</span>
-                                <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'} text-xs truncate`}>{patient.info}</span>
-                              </div>
-
-                              {patient.status === 'complete' && (
-                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-slate-800 text-slate-200 border border-slate-700' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-                                  ✓
-                                </div>
-                              )}
+                        { name: 'Juan Pérez', info: '555-0123' },
+                        { name: 'María López', info: '555-0124' },
+                        { name: 'Carlos Rodríguez', info: 'carlos@email.com' },
+                        { name: 'Ana García', info: '555-0126' }
+                      ].map((patient, i) => (
+                        <div key={i} onClick={() => setTab('patients')} className={`rounded-xl p-3 border cursor-pointer transition ${isDark ? 'border-slate-800 hover:border-slate-700' : 'border-slate-200 hover:border-slate-300'}`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'} w-9 h-9 rounded-lg flex items-center justify-center font-semibold`}>
+                              {patient.name.charAt(0)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`${textMain} text-sm font-semibold`}>{patient.name}</p>
+                              <p className={`${textSub} text-xs truncate`}>{patient.info}</p>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
-
                     <button
                       onClick={() => setTab('patients')}
-                      className="w-full py-3.5 backdrop-blur-2xl border border-white/10 hover:border-white/20 hover:bg-white/10 text-white font-semibold rounded-full transition-all hover:scale-[1.02]"
+                      className={`mt-3 w-full py-3 rounded-xl border text-sm font-semibold ${isDark ? 'border-slate-800 text-white' : 'border-slate-200 text-slate-800'}`}
                     >
                       Ver todos los pacientes
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { icon: Calendar, label: 'Citas hoy', value: '24', action: 'appointments' },
-                    { icon: MessageCircle, label: 'Mensajes', value: '6', action: 'messages' },
-                    { icon: Users, label: 'Pacientes', value: '156', action: 'patients' },
-                    { icon: DollarSign, label: 'Ingresos', value: '$8.5k', action: 'payments' }
-                  ].map((stat, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setTab(stat.action)}
-                      className={`
-                        group rounded-2xl p-6 text-left transition border
-                        ${isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'}
-                      `}
-                    >
-                      <div
-                        className={`
-                          w-11 h-11 rounded-xl flex items-center justify-center mb-3
-                          ${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-800'}
-                        `}
-                      >
-                        <stat.icon size={22} strokeWidth={2.4} />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <div className={`rounded-2xl p-5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className={`${textSub} text-xs`}>Citas hoy</p>
+                        <p className={`${textMain} text-3xl font-black`}>24</p>
                       </div>
-                      <p className={`text-3xl font-black mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{stat.value}</p>
-                      <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-sm`}>{stat.label}</p>
-                    </button>
-                  ))}
+                      <div className={`${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-800'} w-10 h-10 rounded-xl flex items-center justify-center`}>
+                        <Calendar size={20} />
+                      </div>
+                    </div>
+                    <p className={`${textSub} text-sm`}>Nadie sin confirmar • SLAs en verde</p>
+                  </div>
+                  <div className={`rounded-2xl p-5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className={`${textSub} text-xs`}>Mensajes nuevos</p>
+                        <p className={`${textMain} text-3xl font-black`}>6</p>
+                      </div>
+                      <div className={`${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-800'} w-10 h-10 rounded-xl flex items-center justify-center`}>
+                        <MessageCircle size={20} />
+                      </div>
+                    </div>
+                    <p className={`${textSub} text-sm`}>Automático activo • 0 SLA vencidos</p>
+                  </div>
+                  <div className={`rounded-2xl p-5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className={`${textSub} text-xs`}>Ingresos estimados</p>
+                        <p className={`${textMain} text-3xl font-black`}>$8.5k</p>
+                      </div>
+                      <div className={`${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-800'} w-10 h-10 rounded-xl flex items-center justify-center`}>
+                        <DollarSign size={20} />
+                      </div>
+                    </div>
+                    <p className={`${textSub} text-sm`}>Pagos en línea activados</p>
+                  </div>
                 </div>
 
                 <div className="mt-6 grid lg:grid-cols-2 gap-4">
@@ -981,75 +951,94 @@ function RootApp() {
               </div>
 
               {appointmentsView === 'calendar' ? (
-                <div className="grid lg:grid-cols-3 gap-4">
-                  <div className="lg:col-span-2 space-y-3">
-                    {schedule.map((item) => (
-                      <div key={item.id} className={`rounded-2xl p-4 flex items-center gap-4 transition border ${isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/30 to-teal-500/30 flex items-center justify-center text-white font-bold">
-                          <Clock size={20} />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <p className="text-white font-semibold">{item.name}</p>
-                              <p className="text-slate-400 text-sm">{item.service} · {item.channel}</p>
-                            </div>
-                            <span className="text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">{item.date}</span>
-                          </div>
-                          <div className="flex items-center gap-3 mt-2">
-                            <span className="text-sm text-indigo-300 font-semibold">{item.time}</span>
-                            <span className={`
-                              text-xs px-2 py-1 rounded-full border
-                              ${item.status === 'confirmada' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' : 'bg-amber-500/20 text-amber-200 border-amber-500/40'}
-                            `}>
-                              {item.status}
-                            </span>
-                          </div>
-                        </div>
-                        <button className="px-3 py-2 rounded-xl bg-indigo-500/20 text-indigo-200 border border-indigo-500/40 hover:bg-indigo-500/30 transition text-xs font-semibold">
-                          Reprogramar
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className={`rounded-2xl p-4 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-white font-semibold">Slots por horario</p>
-                        <Info size={16} className="text-slate-400" />
-                      </div>
-                      <div className="space-y-2">
-                        {timeSlotsPercent.map((value, idx) => (
-                          <div key={idx}>
-                            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-                              <span>{['9 AM', '12 PM', '3 PM', '6 PM'][idx]}</span>
-                              <span>{value}%</span>
-                            </div>
-                            <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
-                              <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-teal-500" style={{width: `${value}%`}}></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                <div className={`rounded-2xl p-5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div className={`flex items-center gap-2 text-sm ${textSub}`}>
+                      <Calendar size={16} />
+                      <span>Agenda</span>
                     </div>
-
-                    <div className={`rounded-2xl p-4 space-y-3 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                      <div className="flex items-center justify-between">
-                        <p className="text-white font-semibold">Recordatorios</p>
-                        <Bell size={16} className="text-slate-400" />
-                      </div>
-                      {appts.map((appt, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-sm text-slate-300">
-                          <div className="flex items-center gap-2">
-                            <AlertCircle size={14} className="text-indigo-300" />
-                            <span>{appt.name}</span>
-                          </div>
-                          <span className="text-slate-400">{appt.time}</span>
-                        </div>
+                    <div className={`flex items-center gap-2 bg-slate-800/40 rounded-xl p-1 ${!isDark ? 'bg-slate-100' : ''}`}>
+                      {['dia','semana','mes','año'].map((m) => (
+                        <button
+                          key={m}
+                          onClick={() => setCalendarMode(m as typeof calendarMode)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
+                            calendarMode === m
+                              ? isDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-900 shadow-sm'
+                              : isDark ? 'text-slate-400' : 'text-slate-500'
+                          }`}
+                        >
+                          {m}
+                        </button>
                       ))}
                     </div>
                   </div>
+
+                  {calendarMode === 'semana' && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                      {['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map((day, idx) => (
+                        <div key={day} className={`rounded-xl border p-3 space-y-2 ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-slate-50'}`}>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className={textSub}>{day}</span>
+                            <span className={textSub}>{15 + idx} Dic</span>
+                          </div>
+                          <div className="space-y-1.5">
+                            {schedule
+                              .filter((appt) => appt.id % 7 === idx % 7)
+                              .slice(0,2)
+                              .map((appt) => (
+                                <div key={appt.id} className={`rounded-lg border px-2 py-1 text-xs ${isDark ? 'border-slate-700 bg-slate-800 text-slate-200' : 'border-slate-200 bg-white text-slate-800'}`}>
+                                  <p className="font-semibold">{appt.time}</p>
+                                  <p className={`${textSub} truncate`}>{appt.name} · {appt.service}</p>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {calendarMode === 'dia' && (
+                    <div className="space-y-2">
+                      {schedule.map((appt) => (
+                        <div key={appt.id} className={`rounded-xl border p-3 flex items-center gap-3 ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+                          <div className={`${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'} w-10 h-10 rounded-lg flex items-center justify-center font-semibold`}>
+                            {appt.time}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`${textMain} font-semibold text-sm`}>{appt.name}</p>
+                            <p className={`${textSub} text-xs truncate`}>{appt.service} · {appt.channel}</p>
+                          </div>
+                          <span className={`${textSub} text-xs`}>{appt.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {calendarMode === 'mes' && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 text-xs">
+                      {[...Array(28)].map((_, i) => (
+                        <div key={i} className={`h-20 rounded-lg border p-2 flex flex-col ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+                          <div className="flex items-center justify-between">
+                            <span className={textSub}>{i + 1} Dic</span>
+                          </div>
+                          <div className="mt-1 space-y-1 overflow-hidden">
+                            {schedule.filter((s) => s.id % 7 === i % 7).slice(0,1).map((s) => (
+                              <div key={s.id} className={`rounded px-2 py-1 border ${isDark ? 'border-slate-700 bg-slate-800 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+                                {s.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {calendarMode === 'año' && (
+                    <div className={`rounded-xl border p-6 text-center ${isDark ? 'border-slate-800 bg-slate-900 text-slate-300' : 'border-slate-200 bg-white text-slate-600'}`}>
+                      Vista anual compacta. Próximos hitos: campañas de higiene Q1, ortodoncia Q2.
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className={`rounded-2xl overflow-hidden border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
