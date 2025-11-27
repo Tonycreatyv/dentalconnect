@@ -41,6 +41,8 @@ function RootApp() {
   const [dashboardTab, setDashboardTab] = useState('overview');
   const [settingsTab, setSettingsTab] = useState('general');
   const [appointmentsView, setAppointmentsView] = useState<'calendar' | 'list'>('calendar');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [autoMode, setAutoMode] = useState(true);
   const [selected, setSelected] = useState<{id: number; name: string; msg: string; time: string; unread: number} | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [editingChat, setEditingChat] = useState<number | null>(null);
@@ -140,7 +142,8 @@ function RootApp() {
   ];
 
   const integrations = [
-    { name: 'WhatsApp Business', status: 'activo', detail: 'Responde en menos de 5 minutos', icon: MessageCircle },
+    { name: 'WhatsApp Automático', status: 'activo', detail: 'Sesión con QR, responde en minutos', icon: MessageCircle, requiresQr: true },
+    { name: 'Instagram / Messenger', status: 'pendiente', detail: 'Unifica bandeja cuando esté listo', icon: MessageCircle },
     { name: 'Calendario Google', status: 'sincronizado', detail: 'Actualiza agenda en tiempo real', icon: Calendar },
     { name: 'Pagos Stripe', status: 'activo', detail: 'Cobros seguros y rápidos', icon: DollarSign },
     { name: 'Notificaciones push', status: 'beta', detail: 'Alertas en móviles', icon: Bell }
@@ -148,11 +151,10 @@ function RootApp() {
 
   // COLORES PROFESIONALES (no dulces)
   const avatarColors = [
-    'from-slate-600 to-slate-700',
-    'from-blue-600 to-blue-700', 
-    'from-indigo-600 to-indigo-700',
-    'from-slate-500 to-slate-600',
-    'from-blue-500 to-blue-600'
+    'from-slate-700 to-slate-800',
+    'from-indigo-700 to-indigo-800',
+    'from-sky-700 to-sky-800',
+    'from-slate-600 to-slate-700'
   ];
 
   const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
@@ -194,126 +196,155 @@ function RootApp() {
 
   if (!auth) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{backgroundColor: '#0a0b0d'}}>
-        <div className="w-full max-w-md flex flex-col justify-center">
-          <div className="text-center mb-6">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{background: 'radial-gradient(circle at 20% 20%, rgba(99,102,241,0.1), transparent 25%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.12), transparent 30%), #0a0b0d'}}>
+        <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6 items-center">
+          <div className="hidden md:block space-y-4">
             <img
               src="/creatyv image.png"
               alt="CREATYV Logo"
-              className="w-32 mx-auto drop-shadow-2xl"
+              className="w-32 drop-shadow-2xl"
             />
+            <h1 className="text-3xl font-black text-white leading-tight">
+              Automatiza WhatsApp y agenda sin fricción.
+            </h1>
+            <p className="text-slate-300">
+              Responde leads, confirma citas y envía recordatorios en automático. Toma control manual cuando quieras.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {['Respuestas en minutos','Recordatorios automáticos','Agenda sincronizada','Links de pago rápidos'].map((item) => (
+                <div key={item} className="flex items-center gap-2 text-slate-200 text-sm">
+                  <CheckCircle size={16} className="text-emerald-300" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {!loginMode ? (
-            <form onSubmit={register} className="space-y-3">
-              <div>
-                <input
-                  type="text"
-                  placeholder="Tu nombre"
-                  value={form.name}
-                  onChange={(e) => setForm({...form, name: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  placeholder="Nombre de la clínica"
-                  value={form.clinic}
-                  onChange={(e) => setForm({...form, clinic: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <input
-                  type="tel"
-                  placeholder="Teléfono"
-                  value={form.phone}
-                  onChange={(e) => setForm({...form, phone: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={form.email}
-                  onChange={(e) => setForm({...form, email: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={form.pass}
-                  onChange={(e) => setForm({...form, pass: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
-                  required
-                />
+          <div className="w-full max-w-md md:ml-auto">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold">
+                  C
+                </div>
+                <div>
+                  <p className="text-white font-semibold leading-tight">Creatyv Dental</p>
+                  <p className="text-xs text-slate-400">Dashboard de la clínica</p>
+                </div>
               </div>
               <button
-                type="submit"
-                className="relative w-full bg-gradient-to-r from-indigo-500 to-teal-500 hover:from-indigo-400 hover:to-teal-400 text-white font-bold py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-[1.02] overflow-hidden group text-sm"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 bg-slate-900 hover:border-sky-400/50 transition"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-                <span className="relative">Crear Cuenta</span>
+                {theme === 'dark' ? 'Modo oscuro' : 'Modo claro'}
               </button>
-              <button
-                type="button"
-                onClick={() => setLoginMode(true)}
-                className="w-full text-slate-400 hover:text-white font-semibold py-1.5 transition text-sm"
-              >
-                ¿Ya tienes cuenta? Inicia sesión
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={login} className="space-y-3">
-              <div>
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={form.email}
-                  onChange={(e) => setForm({...form, email: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
-                  required
-                />
-              </div>
-              <div>
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={form.pass}
-                  onChange={(e) => setForm({...form, pass: e.target.value})}
-                  className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="relative w-full bg-gradient-to-r from-indigo-500 to-teal-500 hover:from-indigo-400 hover:to-teal-400 text-white font-bold py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-[1.02] overflow-hidden group text-sm"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-                <span className="relative">Iniciar Sesión</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setLoginMode(false)}
-                className="w-full text-slate-400 hover:text-white font-semibold py-1.5 transition text-sm"
-              >
-                ¿Sin cuenta? Crea una ahora
-              </button>
-            </form>
-          )}
+            </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-800">
-            <p className="text-center text-slate-400 text-xs">
-              Powered by <span className="font-bold text-[#00D9FF]">CREATYV.IO</span>
-            </p>
+            <div className="rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl p-5 backdrop-blur">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-white font-semibold text-lg">{loginMode ? 'Iniciar sesión' : 'Crear cuenta'}</p>
+                <button
+                  type="button"
+                  onClick={() => setLoginMode(!loginMode)}
+                  className="text-xs text-sky-300 hover:text-sky-200"
+                >
+                  {loginMode ? 'Crear cuenta' : 'Ya tengo cuenta'}
+                </button>
+              </div>
+
+              {!loginMode ? (
+                <form onSubmit={register} className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Tu nombre"
+                      value={form.name}
+                      onChange={(e) => setForm({...form, name: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Nombre de la clínica"
+                      value={form.clinic}
+                      onChange={(e) => setForm({...form, clinic: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="tel"
+                      placeholder="Teléfono"
+                      value={form.phone}
+                      onChange={(e) => setForm({...form, phone: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
+                      required
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={form.email}
+                      onChange={(e) => setForm({...form, email: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      placeholder="Contraseña"
+                      value={form.pass}
+                      onChange={(e) => setForm({...form, pass: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="relative w-full bg-gradient-to-r from-indigo-500 to-teal-500 hover:from-indigo-400 hover:to-teal-400 text-white font-bold py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-[1.02] overflow-hidden group text-sm"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                    <span className="relative">Crear Cuenta</span>
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={login} className="space-y-3">
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={form.email}
+                      onChange={(e) => setForm({...form, email: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="password"
+                      placeholder="Contraseña"
+                      value={form.pass}
+                      onChange={(e) => setForm({...form, pass: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-500 transition text-sm"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="relative w-full bg-gradient-to-r from-indigo-500 to-teal-500 hover:from-indigo-400 hover:to-teal-400 text-white font-bold py-2.5 rounded-xl transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-[1.02] overflow-hidden group text-sm"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                    <span className="relative">Iniciar Sesión</span>
+                  </button>
+                </form>
+              )}
+
+              <div className="mt-4 pt-4 border-t border-slate-800">
+                <p className="text-center text-slate-400 text-xs">
+                  Conecta tu sesión de WhatsApp por QR, automatiza y toma control manual cuando quieras.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -330,8 +361,10 @@ function RootApp() {
     { id: 'settings', icon: Settings, label: 'Configuración' }
   ];
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className="flex h-screen" style={{backgroundColor: '#0a0b0d'}}>
+    <div className={`flex h-screen theme-${theme}`} style={{backgroundColor: isDark ? '#0a0b0d' : '#f5f7fb'}}>
       {/* TOP BAR MÓVIL - CON SAFE AREA */}
       {isMobile && (
         <div 
@@ -440,33 +473,62 @@ function RootApp() {
       >
         <div className="px-4 pt-4 md:px-8 md:pt-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-3">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900/80 text-white">
-              <Clock size={16} className="text-indigo-400" />
-              <div>
-                <p className="text-xs text-slate-400">Próxima cita</p>
-                <p className="text-sm font-semibold">10:00 AM · Hoy</p>
+            {[
+              { label: 'Próxima cita', value: '10:00 AM · Hoy', icon: Clock },
+              { label: 'Slots ocupados', value: `${timeSlotsPercent[0]}%`, icon: TrendingUp },
+              { label: 'Satisfacción', value: `${satisfactionPercent}%`, icon: CheckCircle }
+            ].map((item) => (
+              <div
+                key={item.label}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${
+                  theme === 'dark'
+                    ? 'border-slate-800 bg-slate-900/80 text-white'
+                    : 'border-slate-200 bg-white text-slate-900 shadow-sm'
+                }`}
+              >
+                <item.icon
+                  size={16}
+                  className={theme === 'dark' ? 'text-sky-300' : 'text-sky-600'}
+                />
+                <div>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {item.label}
+                  </p>
+                  <p className="text-sm font-semibold">{item.value}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900/80 text-white">
-              <TrendingUp size={16} className="text-emerald-400" />
-              <div>
-                <p className="text-xs text-slate-400">Slots ocupados</p>
-                <p className="text-sm font-semibold">{timeSlotsPercent[0]}%</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-900/80 text-white">
-              <CheckCircle size={16} className="text-teal-400" />
-              <div>
-                <p className="text-xs text-slate-400">Satisfacción</p>
-                <p className="text-sm font-semibold">{satisfactionPercent}%</p>
-              </div>
-            </div>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition ${
+                theme === 'dark'
+                  ? 'border-slate-700 bg-slate-900 text-slate-200 hover:border-sky-400/50'
+                  : 'border-slate-200 bg-white text-slate-700 hover:border-sky-400/50 shadow-sm'
+              }`}
+            >
+              {theme === 'dark' ? '🌙 Modo oscuro' : '☀️ Modo claro'}
+            </button>
+            <button
+              onClick={() => setAutoMode(!autoMode)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition ${
+                autoMode
+                  ? 'border-emerald-500/40 text-emerald-100 bg-emerald-500/10 hover:bg-emerald-500/20'
+                  : 'border-amber-500/40 text-amber-100 bg-amber-500/10 hover:bg-amber-500/20'
+              }`}
+            >
+              <Zap size={16} />
+              {autoMode ? 'Automático ON' : 'Manual'}
+            </button>
+            <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-indigo-500/40 text-indigo-100 bg-indigo-500/10 hover:bg-indigo-500/20 transition"
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition ${
+                theme === 'dark'
+                  ? 'border-indigo-500/40 text-indigo-100 bg-indigo-500/10 hover:bg-indigo-500/20'
+                  : 'border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
+              }`}
             >
               <Bell size={16} />
               <span className="text-sm font-semibold">Centro de notificaciones</span>
@@ -476,19 +538,26 @@ function RootApp() {
 
         {showNotifications && (
           <div className="px-4 md:px-8 mt-2">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 grid md:grid-cols-3 gap-3">
+            <div className={`rounded-2xl p-4 grid md:grid-cols-3 gap-3 border ${
+              theme === 'dark' ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
               {notifications.map((n) => (
-                <div key={n.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                <div
+                  key={n.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border ${
+                    theme === 'dark' ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-50 border-slate-200'
+                  }`}
+                >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    n.type === 'success' ? 'bg-emerald-500/20 text-emerald-300' :
-                    n.type === 'warning' ? 'bg-amber-500/20 text-amber-300' :
-                    'bg-indigo-500/20 text-indigo-300'
+                    n.type === 'success' ? 'bg-emerald-500/15 text-emerald-400' :
+                    n.type === 'warning' ? 'bg-amber-500/15 text-amber-500' :
+                    'bg-indigo-500/15 text-indigo-500'
                   }`}>
                     <Bell size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-sm truncate">{n.text}</p>
-                    <p className="text-xs text-slate-400">{n.time}</p>
+                    <p className={`font-semibold text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{n.text}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{n.time}</p>
                   </div>
                   <button
                     onClick={() => {
@@ -496,7 +565,7 @@ function RootApp() {
                       if (n.type === 'warning') setTab('appointments');
                       if (n.type === 'info') setTab('payments');
                     }}
-                    className="text-indigo-300 text-xs font-semibold hover:text-white"
+                    className={`${theme === 'dark' ? 'text-indigo-300 hover:text-white' : 'text-indigo-600 hover:text-indigo-800'} text-xs font-semibold`}
                   >
                     Ver
                   </button>
@@ -507,11 +576,13 @@ function RootApp() {
         )}
 
         {tab === 'lobby' && (
-          <div className="h-full flex bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden relative">
-            <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-20 left-20 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
-              <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-            </div>
+          <div className={`h-full flex overflow-hidden relative ${isDark ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' : 'bg-gradient-to-br from-slate-50 via-white to-slate-100'}`}>
+            {isDark && (
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-20 left-20 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl" style={{animationDelay: '1s'}}></div>
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto relative z-10">
               <div className="max-w-6xl mx-auto px-4 py-6 md:p-8">
@@ -534,54 +605,12 @@ function RootApp() {
 
                     <div className="space-y-2.5">
                       {[
-                        {
-                          icon: Calendar,
-                          text: 'Juan Pérez',
-                          desc: 'Consulta general',
-                          count: '1',
-                          color: 'indigo',
-                          action: 'appointments'
-                        },
-                        {
-                          icon: CheckCircle,
-                          text: 'María López',
-                          desc: 'Revisión completada',
-                          count: '✓',
-                          color: 'green',
-                          action: 'appointments'
-                        },
-                        {
-                          icon: MessageCircle,
-                          text: 'Carlos Rodríguez',
-                          desc: 'Preguntó sobre horarios',
-                          count: '2',
-                          color: 'blue',
-                          action: 'messages'
-                        },
-                        {
-                          icon: DollarSign,
-                          text: 'Ana García',
-                          desc: '$150 procesado',
-                          count: '✓',
-                          color: 'emerald',
-                          action: 'payments'
-                        },
-                        {
-                          icon: User,
-                          text: 'Roberto Martínez',
-                          desc: 'Nuevo registro',
-                          count: '1',
-                          color: 'orange',
-                          action: 'patients'
-                        },
-                        {
-                          icon: AlertCircle,
-                          text: 'Pedro Sánchez',
-                          desc: 'Cita en 30 min',
-                          count: '!',
-                          color: 'amber',
-                          action: 'appointments'
-                        }
+                        { icon: Calendar, text: 'Juan Pérez', desc: 'Consulta general', count: '1', tone: 'accent', action: 'appointments' },
+                        { icon: CheckCircle, text: 'María López', desc: 'Revisión completada', count: '✓', tone: 'success', action: 'appointments' },
+                        { icon: MessageCircle, text: 'Carlos Rodríguez', desc: 'Preguntó sobre horarios', count: '2', tone: 'info', action: 'messages' },
+                        { icon: DollarSign, text: 'Ana García', desc: '$150 procesado', count: '✓', tone: 'success', action: 'payments' },
+                        { icon: User, text: 'Roberto Martínez', desc: 'Nuevo registro', count: '1', tone: 'info', action: 'patients' },
+                        { icon: AlertCircle, text: 'Pedro Sánchez', desc: 'Cita en 30 min', count: '!', tone: 'warning', action: 'appointments' }
                       ].slice(0, isMobile && !showAllLobbyNotifications ? 3 : 6).map((notif, i) => (
                         <div
                           key={i}
@@ -595,21 +624,17 @@ function RootApp() {
                             <div className="flex items-center gap-3.5">
                               <div className={`
                                 w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
-                                ${notif.color === 'indigo' ? 'bg-indigo-500/20' : ''}
-                                ${notif.color === 'green' ? 'bg-green-500/20' : ''}
-                                ${notif.color === 'blue' ? 'bg-blue-500/20' : ''}
-                                ${notif.color === 'emerald' ? 'bg-emerald-500/20' : ''}
-                                ${notif.color === 'orange' ? 'bg-orange-500/20' : ''}
-                                ${notif.color === 'amber' ? 'bg-amber-500/20' : ''}
+                                ${notif.tone === 'accent' ? 'bg-sky-500/15' : ''}
+                                ${notif.tone === 'success' ? 'bg-emerald-500/15' : ''}
+                                ${notif.tone === 'info' ? 'bg-indigo-500/15' : ''}
+                                ${notif.tone === 'warning' ? 'bg-amber-500/15' : ''}
                                 group-hover:scale-110 transition-transform
                               `}>
                                 <notif.icon size={16} className={`
-                                  ${notif.color === 'indigo' ? 'text-indigo-400' : ''}
-                                  ${notif.color === 'green' ? 'text-green-400' : ''}
-                                  ${notif.color === 'blue' ? 'text-blue-400' : ''}
-                                  ${notif.color === 'emerald' ? 'text-emerald-400' : ''}
-                                  ${notif.color === 'orange' ? 'text-orange-400' : ''}
-                                  ${notif.color === 'amber' ? 'text-amber-400' : ''}
+                                  ${notif.tone === 'accent' ? 'text-sky-300' : ''}
+                                  ${notif.tone === 'success' ? 'text-emerald-300' : ''}
+                                  ${notif.tone === 'info' ? 'text-indigo-300' : ''}
+                                  ${notif.tone === 'warning' ? 'text-amber-300' : ''}
                                 `} strokeWidth={2.5} />
                               </div>
 
@@ -618,15 +643,15 @@ function RootApp() {
                                 <span className="text-slate-400 text-xs truncate">{notif.desc}</span>
                               </div>
 
-                              <div className={`
-                                min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold
-                                ${notif.color === 'indigo' ? 'bg-indigo-500 text-white' : ''}
-                                ${notif.color === 'green' ? 'bg-green-500 text-white' : ''}
-                                ${notif.color === 'blue' ? 'bg-blue-500 text-white' : ''}
-                                ${notif.color === 'emerald' ? 'bg-emerald-500 text-white' : ''}
-                                ${notif.color === 'orange' ? 'bg-orange-500 text-white' : ''}
-                                ${notif.color === 'amber' ? 'bg-amber-500 text-white' : ''}
-                              `}>
+                              <div
+                                className={`
+                                  min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold
+                                  ${notif.tone === 'accent' ? 'bg-sky-500 text-white' : ''}
+                                  ${notif.tone === 'success' ? 'bg-emerald-500 text-white' : ''}
+                                  ${notif.tone === 'info' ? 'bg-indigo-500 text-white' : ''}
+                                  ${notif.tone === 'warning' ? 'bg-amber-500 text-white' : ''}
+                                `}
+                              >
                                 {notif.count}
                               </div>
                             </div>
@@ -670,34 +695,36 @@ function RootApp() {
                             animation: `slideInRight 0.5s ease-out ${i * 0.1}s both`
                           }}
                         >
-                          <div className="relative backdrop-blur-2xl rounded-full px-4 py-3 border border-white/10 hover:border-white/20 transition-all duration-300 hover:bg-white/10">
+                        <div className={`relative backdrop-blur-2xl rounded-full px-4 py-3 border transition-all duration-300 ${
+                          isDark ? 'border-white/10 hover:border-white/20 hover:bg-white/10' : 'border-slate-200 hover:border-slate-300 bg-white'
+                        }`}>
                             <div className="flex items-center gap-3.5">
-                              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-teal-500/30 to-indigo-500/30 group-hover:scale-110 transition-transform">
-                                <span className="text-teal-300 font-bold text-sm">{patient.name.charAt(0)}</span>
+                              <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-sky-500/20 to-indigo-500/20 group-hover:scale-110 transition-transform ${isDark ? '' : 'text-indigo-700'}`}>
+                                <span className={`${isDark ? 'text-sky-200' : 'text-indigo-700'} font-bold text-sm`}>{patient.name.charAt(0)}</span>
                               </div>
 
                               <div className="flex items-center gap-2 flex-1 min-w-0">
-                                <span className="text-white font-semibold text-sm">{patient.name}</span>
-                                <span className="text-slate-400 text-xs truncate">{patient.info}</span>
+                                <span className={`${isDark ? 'text-white' : 'text-slate-900'} font-semibold text-sm`}>{patient.name}</span>
+                                <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'} text-xs truncate`}>{patient.info}</span>
                               </div>
 
                               {patient.status === 'complete' && (
-                                <div className="min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold bg-green-500 text-white">
+                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700'}`}>
                                   ✓
                                 </div>
                               )}
                               {patient.status === 'missing-email' && (
-                                <div className="min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold bg-amber-500 text-white">
+                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'}`}>
                                   @
                                 </div>
                               )}
                               {patient.status === 'missing-phone' && (
-                                <div className="min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold bg-amber-500 text-white">
+                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'}`}>
                                   #
                                 </div>
                               )}
                               {patient.status === 'missing-all' && (
-                                <div className="min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold bg-red-500 text-white">
+                                <div className={`min-w-[24px] h-6 rounded-full flex items-center justify-center px-2 flex-shrink-0 text-xs font-bold ${isDark ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700'}`}>
                                   !
                                 </div>
                               )}
@@ -718,31 +745,141 @@ function RootApp() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { icon: Calendar, label: 'Citas hoy', value: '24', color: 'indigo', action: 'appointments' },
-                    { icon: MessageCircle, label: 'Mensajes', value: '6', color: 'purple', action: 'messages' },
-                    { icon: Users, label: 'Pacientes', value: '156', color: 'green', action: 'patients' },
-                    { icon: DollarSign, label: 'Ingresos', value: '$8.5k', color: 'emerald', action: 'payments' }
+                    { icon: Calendar, label: 'Citas hoy', value: '24', action: 'appointments' },
+                    { icon: MessageCircle, label: 'Mensajes', value: '6', action: 'messages' },
+                    { icon: Users, label: 'Pacientes', value: '156', action: 'patients' },
+                    { icon: DollarSign, label: 'Ingresos', value: '$8.5k', action: 'payments' }
                   ].map((stat, i) => (
                     <button
                       key={i}
-                      onClick={() => setTab(stat.action)}
-                      className={`
-                        group bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl
-                        rounded-2xl p-6 border border-${stat.color}-500/30 hover:border-${stat.color}-400/60
-                        transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-${stat.color}-500/20
-                      `}
-                    >
-                      <div className={`
-                        w-12 h-12 bg-gradient-to-br from-${stat.color}-500 to-${stat.color}-600
+                    onClick={() => setTab(stat.action)}
+                    className="
+                      group bg-gradient-to-br from-slate-800/80 to-slate-900/90 backdrop-blur-xl
+                      rounded-2xl p-6 border border-slate-700 hover:border-sky-400/50
+                      transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-sky-500/15
+                    "
+                    style={{ backgroundColor: 'rgba(21, 24, 32, 0.9)' }}
+                  >
+                    <div
+                      className="
+                        w-12 h-12 bg-gradient-to-br from-sky-500 to-indigo-600
                         rounded-xl flex items-center justify-center mb-3 mx-auto
-                        group-hover:scale-110 transition-transform shadow-lg shadow-${stat.color}-500/50
-                      `}>
+                        group-hover:scale-105 transition-transform shadow-lg shadow-sky-500/30
+                      "
+                    >
                         <stat.icon size={24} className="text-white" strokeWidth={2.5} />
                       </div>
                       <p className="text-3xl font-black text-white mb-1">{stat.value}</p>
                       <p className="text-sm text-slate-400">{stat.label}</p>
                     </button>
                   ))}
+                </div>
+
+                <div className="mt-6 grid lg:grid-cols-2 gap-4">
+                  <div
+                    className={`rounded-2xl border p-4 space-y-3 ${
+                      theme === 'dark'
+                        ? 'bg-slate-900/90 border-slate-800'
+                        : 'bg-white border-slate-200 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          Modo automático (n8n)
+                        </p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                          Respuestas, recordatorios y confirmaciones vía WhatsApp + n8n.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 rounded-full border ${
+                          theme === 'dark' ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}>On</span>
+                        <button
+                          className={`text-xs px-3 py-1.5 rounded-lg border ${
+                            theme === 'dark' ? 'border-slate-700 text-slate-200 bg-slate-800' : 'border-slate-200 text-slate-700 bg-white shadow-sm'
+                          }`}
+                        >
+                          Tomar control manual
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid sm:grid-cols-3 gap-2 text-xs">
+                      {[
+                        { label: 'Responder leads', status: 'Automático' },
+                        { label: 'Confirmar cita', status: 'Automático' },
+                        { label: 'Recordar pago', status: 'Manual' }
+                      ].map((item) => (
+                        <div
+                          key={item.label}
+                          className={`rounded-xl px-3 py-2 border ${
+                            theme === 'dark' ? 'border-slate-800 bg-slate-800/60 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          <p className="font-semibold">{item.label}</p>
+                          <p className={`${theme === 'dark' ? 'text-sky-300' : 'text-sky-700'} font-semibold`}>{item.status}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className={`rounded-xl p-3 border text-xs ${theme === 'dark' ? 'border-slate-800 bg-slate-800/60 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>
+                      Flujo: WhatsApp (QR) ➜ n8n (webhook) ➜ Supabase (paciente + cita) ➜ WhatsApp (confirmación) ➜ Google Calendar. Ajusta pasos desde n8n.
+                    </div>
+                  </div>
+
+                  <div
+                    className={`rounded-2xl border p-4 space-y-3 ${
+                      theme === 'dark'
+                        ? 'bg-slate-900/90 border-slate-800'
+                        : 'bg-white border-slate-200 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          Integraciones CRM y canales
+                        </p>
+                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                          Conecta tu CRM o usa Supabase como HUB de datos.
+                        </p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full border ${
+                        theme === 'dark' ? 'bg-sky-500/10 text-sky-200 border-sky-500/30' : 'bg-sky-50 text-sky-700 border-sky-200'
+                      }`}>Sincronizado</span>
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                      {[
+                        { name: 'WhatsApp Automático', status: 'Conectado' },
+                        { name: 'Google Calendar', status: 'Conectado' },
+                        { name: 'Stripe', status: 'Conectado' },
+                        { name: 'CRM externo', status: 'Pendiente' }
+                      ].map((item) => (
+                        <div
+                          key={item.name}
+                          className={`rounded-xl px-3 py-2 border ${
+                            theme === 'dark' ? 'border-slate-800 bg-slate-800/60 text-slate-200' : 'border-slate-200 bg-slate-50 text-slate-700'
+                          } flex items-center justify-between`}
+                        >
+                          <span>{item.name}</span>
+                          <span className={item.status === 'Conectado'
+                            ? `${theme === 'dark' ? 'text-emerald-300' : 'text-emerald-700'} font-semibold`
+                            : `${theme === 'dark' ? 'text-amber-300' : 'text-amber-700'} font-semibold`
+                          }>
+                            {item.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      className={`w-full text-sm font-semibold rounded-xl px-3 py-2 transition ${
+                        theme === 'dark'
+                          ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                          : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm'
+                      }`}
+                    >
+                      Conectar con CRM / API
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -752,39 +889,41 @@ function RootApp() {
         )}
 
         {tab === 'messages' && (
-          <div className="flex-1 overflow-auto bg-gray-950">
+          <div className={`flex-1 overflow-auto ${isDark ? 'bg-gray-950' : 'bg-slate-50'}`}>
             <div className="h-full">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 md:gap-4 h-full px-0 md:px-4">
                 {/* LISTA DE CONVERSACIONES */}
-                <div className={`${selected && isMobile ? 'hidden' : ''} lg:col-span-4 bg-slate-900 ${isMobile ? '' : 'rounded-xl my-4'} overflow-hidden flex flex-col ${isMobile ? '' : 'border border-slate-800 shadow-xl'}`} style={{height: isMobile ? 'calc(100vh - 9rem)' : 'calc(100vh - 120px)'}}>
-                  <div className="p-3 md:p-4 border-b border-slate-800 bg-slate-900">
+                <div className={`${selected && isMobile ? 'hidden' : ''} lg:col-span-4 ${isDark ? 'bg-slate-900' : 'bg-white'} ${isMobile ? '' : 'rounded-xl my-4'} overflow-hidden flex flex-col ${isMobile ? '' : isDark ? 'border border-slate-800 shadow-xl' : 'border border-slate-200 shadow-sm'}`} style={{height: isMobile ? 'calc(100vh - 9rem)' : 'calc(100vh - 120px)'}}>
+                  <div className={`p-3 md:p-4 border-b ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-base md:text-lg font-bold text-white">Conversaciones</h2>
-                      <button className="p-1.5 hover:bg-slate-800 rounded-lg transition">
-                        <Filter size={16} className="text-slate-400" />
+                      <h2 className={`text-base md:text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Conversaciones</h2>
+                      <button className={`p-1.5 rounded-lg transition ${isDark ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}>
+                        <Filter size={16} className={isDark ? 'text-slate-400' : 'text-slate-500'} />
                       </button>
                     </div>
                     <div className="relative">
-                      <Search size={15} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                      <Search size={15} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
                       <input
                         type="text"
                         placeholder="Buscar conversaciones..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-slate-400 text-sm transition"
+                        className={`w-full pl-9 pr-3 py-2 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm transition ${
+                          isDark ? 'bg-slate-800 border border-slate-700 text-white placeholder-slate-400' : 'bg-white border border-slate-300 text-slate-900 placeholder-slate-400'
+                        }`}
                       />
                     </div>
                   </div>
                   <div className="flex-1 overflow-y-auto">
                     {filteredChats.map(chat => (
-                      <div key={chat.id} className={`relative group transition-all duration-200 ${selected?.id === chat.id ? 'bg-slate-800 border-l-[3px] border-l-indigo-500' : 'border-b border-slate-800 hover:bg-slate-800'}`}>
+                      <div key={chat.id} className={`relative group transition-all duration-200 ${selected?.id === chat.id ? (isDark ? 'bg-slate-800 border-l-[3px] border-l-indigo-500' : 'bg-slate-100 border-l-[3px] border-l-indigo-500') : isDark ? 'border-b border-slate-800 hover:bg-slate-800' : 'border-b border-slate-200 hover:bg-slate-50'}`}>
                         {editingChat === chat.id ? (
                           <div className="p-3 flex items-center gap-2">
                             <input
                               type="text"
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
-                              className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                              className={`flex-1 px-3 py-2 rounded-lg text-sm ${isDark ? 'bg-slate-700 border border-slate-600 text-white' : 'bg-white border border-slate-300 text-slate-900'}`}
                               autoFocus
                             />
                             <button
@@ -792,13 +931,13 @@ function RootApp() {
                                 setChats(chats.map(c => c.id === chat.id ? {...c, name: editName} : c));
                                 setEditingChat(null);
                               }}
-                              className="p-2 bg-green-600 rounded-lg hover:bg-green-700 transition"
+                              className={`p-2 rounded-lg transition ${isDark ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'}`}
                             >
                               <CheckCircle size={16} className="text-white" />
                             </button>
                             <button
                               onClick={() => setEditingChat(null)}
-                              className="p-2 bg-slate-600 rounded-lg hover:bg-slate-700 transition"
+                              className={`p-2 rounded-lg transition ${isDark ? 'bg-slate-600 hover:bg-slate-700 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
                             >
                               <X size={16} className="text-white" />
                             </button>
@@ -811,13 +950,13 @@ function RootApp() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-0.5">
-                                  <p className="font-semibold truncate text-sm text-white">{chat.name}</p>
-                                  <span className="text-xs ml-2 text-slate-400">{chat.time}</span>
+                                  <p className={`font-semibold truncate text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>{chat.name}</p>
+                                  <span className={`text-xs ml-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{chat.time}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                  <p className="text-xs truncate pr-2 text-slate-400">{chat.msg}</p>
+                                  <p className={`text-xs truncate pr-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{chat.msg}</p>
                                   {chat.unread > 0 && (
-                                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center flex-shrink-0 shadow-md">
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center flex-shrink-0 shadow-md ${isDark ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700'}`}>
                                       {chat.unread}
                                     </span>
                                   )}
@@ -830,7 +969,7 @@ function RootApp() {
                                 setEditingChat(chat.id);
                                 setEditName(chat.name);
                               }}
-                              className="absolute top-2 right-2 p-1.5 bg-slate-700/80 rounded-lg opacity-0 group-hover:opacity-100 transition hover:bg-slate-600"
+                              className={`absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition ${isDark ? 'bg-slate-700/80 hover:bg-slate-600' : 'bg-slate-100 hover:bg-slate-200'}`}
                             >
                               <Edit2 size={13} className="text-white" />
                             </button>
@@ -843,8 +982,8 @@ function RootApp() {
 
                 {/* CHAT WINDOW */}
                 {selected ? (
-                  <div className={`${isMobile ? 'col-span-1' : 'lg:col-span-8 my-4'} ${isMobile ? '' : 'rounded-xl'} overflow-hidden flex flex-col ${isMobile ? '' : 'border border-slate-200'}`} style={{height: isMobile ? 'calc(100vh - 9rem)' : 'calc(100vh - 120px)'}}>
-                    <div className="px-3 md:px-4 py-2 md:py-3 bg-white border-b border-slate-200 flex items-center gap-3">
+                  <div className={`${isMobile ? 'col-span-1' : 'lg:col-span-8 my-4'} ${isMobile ? '' : 'rounded-xl'} overflow-hidden flex flex-col ${isMobile ? '' : isDark ? 'border border-slate-200/40' : 'border border-slate-200'}`} style={{height: isMobile ? 'calc(100vh - 9rem)' : 'calc(100vh - 120px)'}}>
+                    <div className={`${isDark ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'} px-3 md:px-4 py-2 md:py-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center gap-3`}>
                       {isMobile && (
                         <button onClick={() => setSelected(null)} className="p-1 hover:bg-slate-100 rounded-full">
                           <X size={20} className="text-slate-600" />
@@ -854,16 +993,26 @@ function RootApp() {
                         {selected.name.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm md:text-base font-semibold leading-tight" style={{color: '#0f172a'}}>{selected.name}</h3>
-                        <p className="text-xs leading-tight" style={{color: '#64748b'}}>en línea</p>
+                        <h3 className={`text-sm md:text-base font-semibold leading-tight ${isDark ? 'text-white' : ''}`}>{selected.name}</h3>
+                        <p className={`text-xs leading-tight ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>en línea</p>
                       </div>
+                      <button
+                        onClick={() => setAutoMode(!autoMode)}
+                        className={`text-xs px-3 py-1.5 rounded-lg border ${
+                          autoMode
+                            ? isDark ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-emerald-200 text-emerald-700 bg-emerald-50'
+                            : isDark ? 'border-amber-500/40 text-amber-200 bg-amber-500/10' : 'border-amber-200 text-amber-700 bg-amber-50'
+                        }`}
+                      >
+                        {autoMode ? 'Auto' : 'Manual'}
+                      </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-2 bg-slate-50">
+                    <div className={`flex-1 overflow-y-auto p-3 md:p-4 space-y-2 ${isDark ? 'bg-slate-900' : 'bg-slate-50'}`}>
                       {msgs.map((m, i) => (
                         <div key={i} className={`flex ${m.from === 'user' ? 'justify-start' : 'justify-end'}`}>
                           <div className={`relative max-w-[75%] md:max-w-sm px-3 py-2 shadow-sm ${
                             m.from === 'user'
-                              ? 'bg-white border border-slate-200 text-slate-900 rounded-r-lg rounded-tl-lg'
+                              ? `${isDark ? 'bg-slate-800 border border-slate-700 text-white' : 'bg-white border border-slate-200 text-slate-900'} rounded-r-lg rounded-tl-lg`
                               : 'bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-l-lg rounded-tr-lg'
                           }`}>
                             <p className="text-xs md:text-sm leading-relaxed">{m.text}</p>
@@ -877,11 +1026,13 @@ function RootApp() {
                         </div>
                       ))}
                     </div>
-                    <div className="px-3 md:px-4 py-2 md:py-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                    <div className={`px-3 md:px-4 py-2 md:py-3 border-t flex items-center gap-2 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                       <input
                         type="text"
                         placeholder="Escribe un mensaje"
-                        className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-slate-900/30 focus:border-slate-900 text-slate-900 placeholder-slate-400 text-sm transition"
+                        className={`flex-1 px-4 py-2 rounded-full focus:outline-none focus:ring-2 text-sm transition ${
+                          isDark ? 'bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:ring-slate-600/50 focus:border-slate-600' : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-slate-900/30 focus:border-slate-900'
+                        }`}
                         style={{fontSize: '16px'}}
                       />
                       <button className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white rounded-full transition flex items-center justify-center flex-shrink-0 shadow-md">
@@ -890,11 +1041,11 @@ function RootApp() {
                     </div>
                   </div>
                 ) : (
-                  <div className={`${isMobile ? 'hidden' : 'lg:col-span-8 my-4'} bg-white rounded-xl flex items-center justify-center border border-slate-200`} style={{height: 'calc(100vh - 120px)'}}>
+                  <div className={`${isMobile ? 'hidden' : 'lg:col-span-8 my-4'} ${isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'} rounded-xl flex items-center justify-center`} style={{height: 'calc(100vh - 120px)'}}>
                     <div className="text-center px-4">
                       <MessageCircle size={64} className="mx-auto mb-4 text-slate-300" />
-                      <p className="text-slate-700 font-semibold text-base mb-1">Selecciona una conversación</p>
-                      <p className="text-slate-500 text-sm">WhatsApp Business conectado</p>
+                      <p className={`${isDark ? 'text-slate-200' : 'text-slate-700'} font-semibold text-base mb-1`}>Selecciona una conversación</p>
+                      <p className={`${isDark ? 'text-slate-500' : 'text-slate-500'} text-sm`}>WhatsApp conectado (sesión QR)</p>
                     </div>
                   </div>
                 )}
@@ -904,7 +1055,7 @@ function RootApp() {
         )}
 
         {tab === 'appointments' && (
-          <div className="flex-1 overflow-auto bg-slate-950">
+          <div className={`flex-1 overflow-auto ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-6xl mx-auto px-4 py-6 md:p-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
@@ -944,7 +1095,7 @@ function RootApp() {
                 <div className="grid lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-3">
                     {schedule.map((item) => (
-                      <div key={item.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center gap-4 hover:border-indigo-500/40 transition">
+                      <div key={item.id} className={`rounded-2xl p-4 flex items-center gap-4 hover:border-indigo-500/40 transition border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/30 to-teal-500/30 flex items-center justify-center text-white font-bold">
                           <Clock size={20} />
                         </div>
@@ -974,7 +1125,7 @@ function RootApp() {
                   </div>
 
                   <div className="space-y-3">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                    <div className={`rounded-2xl p-4 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-white font-semibold">Slots por horario</p>
                         <Info size={16} className="text-slate-400" />
@@ -994,7 +1145,7 @@ function RootApp() {
                       </div>
                     </div>
 
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <div className={`rounded-2xl p-4 space-y-3 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                       <div className="flex items-center justify-between">
                         <p className="text-white font-semibold">Recordatorios</p>
                         <Bell size={16} className="text-slate-400" />
@@ -1012,7 +1163,7 @@ function RootApp() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <div className={`rounded-2xl overflow-hidden border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                   <div className="grid grid-cols-5 px-4 py-3 text-xs font-semibold text-slate-400 border-b border-slate-800">
                     <span>Paciente</span>
                     <span>Servicio</span>
@@ -1041,7 +1192,7 @@ function RootApp() {
         )}
 
         {tab === 'patients' && (
-          <div className="flex-1 overflow-auto bg-slate-950">
+          <div className={`flex-1 overflow-auto ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-6xl mx-auto px-4 py-6 md:p-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
@@ -1104,7 +1255,7 @@ function RootApp() {
         )}
 
         {tab === 'payments' && (
-          <div className="flex-1 overflow-auto bg-slate-950">
+          <div className={`flex-1 overflow-auto ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-6xl mx-auto px-4 py-6 md:p-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
@@ -1171,7 +1322,7 @@ function RootApp() {
         )}
 
         {tab === 'reports' && (
-          <div className="flex-1 overflow-auto bg-slate-950">
+          <div className={`flex-1 overflow-auto ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-6xl mx-auto px-4 py-6 md:p-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
@@ -1226,7 +1377,7 @@ function RootApp() {
         )}
 
         {tab === 'analytics' && (
-          <div className="flex-1 overflow-auto bg-slate-950">
+          <div className={`flex-1 overflow-auto ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-6xl mx-auto px-4 py-6 md:p-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
@@ -1326,7 +1477,7 @@ function RootApp() {
         )}
 
         {tab === 'settings' && (
-          <div className="flex-1 overflow-auto bg-slate-950">
+          <div className={`flex-1 overflow-auto ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="max-w-5xl mx-auto px-4 py-6 md:p-8 space-y-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
@@ -1403,25 +1554,39 @@ function RootApp() {
               )}
 
               {settingsTab === 'integrations' && (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
-                  <p className="text-white font-semibold">Integraciones</p>
+                <div className={`rounded-2xl p-5 space-y-3 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                  <p className={`${isDark ? 'text-white' : 'text-slate-900'} font-semibold`}>Integraciones</p>
                   <div className="space-y-2">
                     {integrations.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between bg-slate-800/50 border border-slate-700 rounded-xl px-3 py-2">
+                      <div key={idx} className={`flex items-center justify-between rounded-xl px-3 py-2 border ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center">
-                            <item.icon size={16} className="text-indigo-300" />
+                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isDark ? 'bg-slate-900 border border-slate-700' : 'bg-white border border-slate-200'}`}>
+                            <item.icon size={16} className={isDark ? 'text-indigo-300' : 'text-indigo-500'} />
                           </div>
                           <div>
-                            <p className="text-white font-semibold text-sm">{item.name}</p>
-                            <p className="text-slate-400 text-xs">{item.detail}</p>
+                            <p className={`${isDark ? 'text-white' : 'text-slate-900'} font-semibold text-sm`}>{item.name}</p>
+                            <p className={`${isDark ? 'text-slate-400' : 'text-slate-500'} text-xs`}>{item.detail}</p>
                           </div>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded-full border ${item.status === 'activo' || item.status === 'sincronizado' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' : 'bg-amber-500/20 text-amber-200 border-amber-500/40'}`}>
+                        <span className={`text-xs px-2 py-1 rounded-full border ${item.status === 'activo' || item.status === 'sincronizado' ? (isDark ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' : 'bg-emerald-50 text-emerald-700 border-emerald-200') : (isDark ? 'bg-amber-500/20 text-amber-200 border-amber-500/40' : 'bg-amber-50 text-amber-700 border-amber-200')}`}>
                           {item.status}
                         </span>
                       </div>
                     ))}
+                  </div>
+
+                  {/* WhatsApp QR connect */}
+                  <div className={`mt-3 rounded-2xl p-4 border ${isDark ? 'bg-slate-800/60 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className={`${isDark ? 'text-white' : 'text-slate-900'} font-semibold text-sm`}>Conectar WhatsApp (QR)</p>
+                        <p className={`${isDark ? 'text-slate-400' : 'text-slate-600'} text-xs`}>Escanea el QR para iniciar sesión de tu línea.</p>
+                      </div>
+                      <button className="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Generar QR</button>
+                    </div>
+                    <div className={`h-32 rounded-xl border flex items-center justify-center ${isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-white'}`}>
+                      <span className={`${isDark ? 'text-slate-500' : 'text-slate-400'} text-xs`}>QR de WhatsApp aquí</span>
+                    </div>
                   </div>
                 </div>
               )}
