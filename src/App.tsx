@@ -45,7 +45,7 @@ function RootApp() {
   const [calendarMode, setCalendarMode] = useState<'dia' | 'semana' | 'mes' | 'año'>('semana');
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [autoMode, setAutoMode] = useState(true);
-  const [clinicId] = useState<string>(import.meta.env.VITE_CLINIC_ID || '');
+  const [clinicId] = useState<string>(import.meta.env.VITE_CLINIC_ID || '8cba38dd-2da4-4388-a931-eaa9550b33bb');
   const [messageDraft, setMessageDraft] = useState('');
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://oeeyzqqnxvcpibdwuugu.supabase.co';
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lZXl6cXFueHZjcGliZHd1dWd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxODU2OTEsImV4cCI6MjA3NTc2MTY5MX0.bjKLmyZX4eIxKDWIwBxM0Wg6bKZoVeECvA4tzzuh8lk';
@@ -187,8 +187,24 @@ function RootApp() {
   };
 
   useEffect(() => {
-    loadData().catch(() => {});
-    loadConversations().catch(() => {});
+    (async () => {
+      try {
+        await loadData();
+        await loadConversations();
+        if (clinicId) {
+          const { data } = await supabase
+            .from('clinics')
+            .select('auto_mode')
+            .eq('id', clinicId)
+            .single();
+          if (data && typeof (data as any).auto_mode === 'boolean') {
+            setAutoMode((data as any).auto_mode);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    })();
   }, []);
 
   const persistAutoMode = async (next: boolean) => {
