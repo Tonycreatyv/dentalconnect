@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Component, ReactNode } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { MessageCircle, Calendar, BarChart3, Settings, LogOut, Menu, X, Send, Plus, CreditCard as Edit2, Search, Filter, Bell, User, Clock, TrendingUp, Users, CheckCircle, Home, FileText, DollarSign, AlertCircle, Phone, Upload, MapPin, Info, Check, Zap, Smile } from 'lucide-react';
+import { MessageCircle, Calendar, BarChart3, Settings, LogOut, Menu, X, Send, Plus, CreditCard as Edit2, Search, Filter, Bell, User, Clock, TrendingUp, Users, CheckCircle, Home, FileText, DollarSign, Phone, Upload, MapPin, Info, Check, Zap, Smile } from 'lucide-react';
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; msg: string }> {
   constructor(props: { children: ReactNode }) {
@@ -45,12 +45,15 @@ function RootApp() {
   const [calendarMode, setCalendarMode] = useState<'dia' | 'semana' | 'mes' | 'año'>('semana');
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [autoMode, setAutoMode] = useState(true);
+  const [clinicId] = useState<string>(import.meta.env.VITE_CLINIC_ID || '');
+  const [messageDraft, setMessageDraft] = useState('');
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://oeeyzqqnxvcpibdwuugu.supabase.co';
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lZXl6cXFueHZjcGliZHd1dWd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxODU2OTEsImV4cCI6MjA3NTc2MTY5MX0.bjKLmyZX4eIxKDWIwBxM0Wg6bKZoVeECvA4tzzuh8lk';
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
-  const [selected, setSelected] = useState<{id: number; name: string; msg: string; time: string; unread: number} | null>(null);
+  const n8nSendUrl = import.meta.env.VITE_N8N_SEND_URL || '';
+  const [selected, setSelected] = useState<{id: string; name: string; msg: string; time: string; unread: number} | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [editingChat, setEditingChat] = useState<number | null>(null);
+  const [editingChat, setEditingChat] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -104,49 +107,118 @@ function RootApp() {
     }
   }, [tab]);
 
+  const loadData = async () => {
+    const { data: appointmentsData } = await supabase
+      .from('appointments')
+      .select('id, service, start_at, status, source_conversation, contacts:contact_id(full_name)')
+      .limit(20);
+    if (appointmentsData) {
+      setSchedule(appointmentsData.map((a, idx) => ({
+        id: idx + 1,
+        name: (a as any).contacts?.full_name || 'Paciente',
+        service: a.service || 'Cita',
+        date: a.start_at ? new Date(a.start_at).toLocaleDateString('es-HN', { day: '2-digit', month: 'short' }) : '',
+        time: a.start_at ? new Date(a.start_at).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '',
+        status: a.status || 'pendiente',
+        channel: 'WhatsApp'
+      })));
+    }
+
+    const { data: contactsData } = await supabase
+      .from('contacts')
+      .select('full_name, created_at')
+      .limit(10);
+    if (contactsData) {
+      setPatients(contactsData.map((c) => ({
+        name: c.full_name || 'Paciente',
+        status: 'activo',
+        phone: '—',
+        lastVisit: c.created_at ? new Date(c.created_at).toLocaleDateString('es-HN') : '—',
+        location: '—',
+        notes: 'Desde Supabase'
+      })));
+    }
+  };
+
+  const loadConversations = async () => {
+    setLoadingChats(true);
+    const { data: convs } = await supabase
+      .from('conversations')
+      .select('id, contact_id, updated_at, contacts:contact_id(full_name)')
+      .limit(20)
+      .order('updated_at', { ascending: false });
+
+    const { data: msgsData } = await supabase
+      .from('messages')
+      .select('conversation_id, body, created_at, direction')
+      .order('created_at', { ascending: false })
+      .limit(200);
+
+    if (convs) {
+      const mapped = convs.map((c) => {
+        const lastMsg = msgsData?.find((m) => m.conversation_id === c.id);
+        return {
+          id: c.id as string,
+          name: (c as any).contacts?.full_name || 'Paciente',
+          msg: lastMsg?.body || 'Sin mensajes',
+          time: lastMsg?.created_at ? new Date(lastMsg.created_at).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '',
+          unread: 0
+        };
+      });
+      setChats(mapped);
+      if (!selected && mapped.length > 0) setSelected(mapped[0]);
+    }
+    setLoadingChats(false);
+  };
+
+  const loadMessages = async (conversationId: string) => {
+    const { data: messagesData } = await supabase
+      .from('messages')
+      .select('body, created_at, direction')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+    if (messagesData) {
+      setMsgs(messagesData.map((m) => ({
+        from: m.direction === 'inbound' ? 'user' : 'bot',
+        text: m.body || '',
+        time: m.created_at ? new Date(m.created_at).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : ''
+      })));
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      const { data: appointmentsData } = await supabase
-        .from('appointments')
-        .select('id, service, start_at, status, source_conversation, contacts:contact_id(full_name)')
-        .limit(20);
-      if (appointmentsData) {
-        setSchedule(appointmentsData.map((a, idx) => ({
-          id: idx + 1,
-          name: (a as any).contacts?.full_name || 'Paciente',
-          service: a.service || 'Cita',
-          date: a.start_at ? new Date(a.start_at).toLocaleDateString('es-HN', { day: '2-digit', month: 'short' }) : '',
-          time: a.start_at ? new Date(a.start_at).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '',
-          status: a.status || 'pendiente',
-          channel: 'WhatsApp'
-        })));
-      }
-
-      const { data: contactsData } = await supabase
-        .from('contacts')
-        .select('full_name, created_at')
-        .limit(10);
-      if (contactsData) {
-        setPatients(contactsData.map((c) => ({
-          name: c.full_name || 'Paciente',
-          status: 'activo',
-          phone: '—',
-          lastVisit: c.created_at ? new Date(c.created_at).toLocaleDateString('es-HN') : '—',
-          location: '—',
-          notes: 'Desde Supabase'
-        })));
-      }
-    };
-
     loadData().catch(() => {});
+    loadConversations().catch(() => {});
   }, []);
 
-  const [chats, setChats] = useState([
-    { id: 1, name: 'Juan Pérez', msg: 'Quiero agendar cita', time: '5m', unread: 2 },
-    { id: 2, name: 'María López', msg: 'Gracias por la info', time: '30m', unread: 0 },
-    { id: 3, name: 'Carlos Rodríguez', msg: '¿Cuál es el costo?', time: '1h', unread: 1 },
-    { id: 4, name: 'Ana García', msg: 'Confirmo mi cita', time: '2h', unread: 0 }
-  ]);
+  const persistAutoMode = async (next: boolean) => {
+    setAutoMode(next);
+    if (!clinicId) return;
+    await supabase.from('clinics').update({ auto_mode: next }).eq('id', clinicId);
+  };
+
+  const handleSendMessage = async () => {
+    if (!selected || !messageDraft.trim()) return;
+    const outbound = {
+      conversation_id: selected.id,
+      text: messageDraft.trim()
+    };
+
+    if (n8nSendUrl) {
+      fetch(n8nSendUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(outbound)
+      }).catch(() => {});
+    }
+
+    setMsgs(prev => [...prev, { from: 'bot', text: messageDraft.trim(), time: new Date().toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) }]);
+    setMessageDraft('');
+  };
+
+  const [chats, setChats] = useState<{id: string; name: string; msg: string; time: string; unread: number}[]>([]);
+  const [msgs, setMsgs] = useState<{from: 'user' | 'bot'; text: string; time: string}[]>([]);
+  const [loadingChats, setLoadingChats] = useState(false);
 
   const notifications = [
     { id: 1, text: 'Nueva cita agendada', time: '5m', type: 'success' },
@@ -192,7 +264,10 @@ function RootApp() {
     'from-slate-600 to-slate-700'
   ];
 
-  const getAvatarColor = (id: number) => avatarColors[id % avatarColors.length];
+  const getAvatarColor = (id: number | string) => {
+    const num = typeof id === 'string' ? id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0) : id;
+    return avatarColors[num % avatarColors.length];
+  };
 
   const filteredChats = chats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -200,13 +275,6 @@ function RootApp() {
   );
 
   const nowText = new Date().toLocaleString('es-HN', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
-
-  const msgs = selected ? [
-    { from: 'user', text: '¿Cuándo puedo agendar?', time: '10:30' },
-    { from: 'bot', text: '¡Hola! ¿Qué servicio necesitas?', time: '10:31' },
-    { from: 'user', text: 'Una limpieza dental', time: '10:32' },
-    { from: 'bot', text: '¿Mañana a las 2pm?', time: '10:33' }
-  ] : [];
 
 
   const login = (e: React.FormEvent) => {
@@ -456,7 +524,7 @@ function RootApp() {
             ].map((item) => (
               <div
                 key={item.label}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm ${
+                className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border text-xs ${
                   isDark
                     ? 'border-slate-800 bg-slate-900/80 text-white'
                     : 'border-slate-200 bg-white text-slate-900 shadow-sm'
@@ -486,7 +554,7 @@ function RootApp() {
               Notificaciones
             </button>
             <button
-              onClick={() => setAutoMode(!autoMode)}
+              onClick={() => persistAutoMode(!autoMode)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-semibold transition ${
                 isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-slate-200 bg-white text-slate-700 shadow-sm'
               }`}
@@ -560,10 +628,10 @@ function RootApp() {
 
                 <div className="grid lg:grid-cols-3 gap-4 md:gap-6 mb-8">
                   <div className={`lg:col-span-2 rounded-2xl p-5 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className={`text-xl font-semibold ${textMain}`}>Actualizaciones</h2>
-                      <div className={`${textSub} text-xs`}>4 nuevas</div>
-                    </div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className={`text-xl font-semibold ${textMain}`}>Actualizaciones</h2>
+            <div className={`${textSub} text-xs`}>4 nuevas</div>
+          </div>
                     <div className="space-y-2.5">
                       {[
                         { icon: Calendar, text: 'Juan Pérez', desc: 'Consulta general', count: '1', action: 'appointments' },
@@ -656,7 +724,7 @@ function RootApp() {
                             className={`text-xs px-3 py-1.5 rounded-lg border ${
                               isDark ? 'border-slate-700 text-slate-200 bg-slate-800' : 'border-slate-200 text-slate-700 bg-white shadow-sm'
                             }`}
-                            onClick={() => setAutoMode(!autoMode)}
+                            onClick={() => persistAutoMode(!autoMode)}
                           >
                             Tomar control manual
                           </button>
@@ -763,6 +831,9 @@ function RootApp() {
                     </div>
                   </div>
                   <div className="flex-1 overflow-y-auto">
+                    {loadingChats && (
+                      <div className={`p-3 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Cargando conversaciones...</div>
+                    )}
                     {filteredChats.map(chat => (
                       <div key={chat.id} className={`relative group transition-all duration-200 ${selected?.id === chat.id ? (isDark ? 'bg-slate-800 border-l-[3px] border-l-indigo-500' : 'bg-slate-100 border-l-[3px] border-l-indigo-500') : isDark ? 'border-b border-slate-800 hover:bg-slate-800' : 'border-b border-slate-200 hover:bg-slate-50'}`}>
                         {editingChat === chat.id ? (
@@ -791,7 +862,7 @@ function RootApp() {
                             </button>
                           </div>
                         ) : (
-                          <button onClick={() => setSelected(chat)} className="w-full p-3 text-left relative">
+                          <button onClick={() => { setSelected(chat); loadMessages(chat.id).catch(() => {}); }} className="w-full p-3 text-left relative">
                             <div className="flex items-center gap-3">
                               <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${getAvatarColor(chat.id)} flex items-center justify-center font-semibold text-white text-sm flex-shrink-0 shadow-md`}>
                                 {chat.name.charAt(0)}
@@ -878,12 +949,18 @@ function RootApp() {
                       <input
                         type="text"
                         placeholder="Escribe un mensaje"
+                        value={messageDraft}
+                        onChange={(e) => setMessageDraft(e.target.value)}
                         className={`flex-1 px-4 py-2 rounded-full focus:outline-none focus:ring-2 text-sm transition ${
                           isDark ? 'bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:ring-slate-600/50 focus:border-slate-600' : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-slate-900/30 focus:border-slate-900'
                         }`}
                         style={{fontSize: '16px'}}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
                       />
-                      <button className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white rounded-full transition flex items-center justify-center flex-shrink-0 shadow-md">
+                      <button
+                        onClick={handleSendMessage}
+                        className="w-10 h-10 bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white rounded-full transition flex items-center justify-center flex-shrink-0 shadow-md"
+                      >
                         <Send size={18} />
                       </button>
                     </div>
@@ -1451,34 +1528,7 @@ function RootApp() {
         )}
       </div>
 
-      <button
-        onClick={() => setShowNotifications(!showNotifications)}
-        className="fixed bottom-24 right-4 bg-slate-900 border border-slate-800 text-white rounded-full p-3 shadow-lg shadow-indigo-500/30 hover:shadow-2xl transition z-50"
-        style={{paddingBottom: isMobile ? 'calc(env(safe-area-inset-bottom) + 12px)' : '12px'}}
-      >
-        <Bell size={20} />
-        <span className="absolute -top-1 -right-1 bg-red-500 text-[10px] font-bold rounded-full px-1.5 py-0.5">3</span>
-      </button>
-
-      {showNotifications && (
-        <div className="fixed bottom-36 right-4 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-3 space-y-2 z-50">
-          <div className="flex items-center justify-between">
-            <p className="text-white font-semibold text-sm">Notificaciones</p>
-            <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-slate-800 rounded-lg">
-              <X size={14} className="text-slate-400" />
-            </button>
-          </div>
-          {notifications.map((n) => (
-            <div key={n.id} className="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2">
-              <AlertCircle size={15} className={n.type === 'success' ? 'text-emerald-300' : n.type === 'warning' ? 'text-amber-300' : 'text-indigo-300'} />
-              <div className="flex-1">
-                <p className="text-slate-200 text-sm">{n.text}</p>
-                <p className="text-slate-500 text-xs">{n.time}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Notificaciones móviles ya están en la top bar */}
 
       {/* BOTTOM NAVBAR MÓVIL - CON SAFE AREA */}
       {isMobile && (
