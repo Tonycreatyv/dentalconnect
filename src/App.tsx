@@ -202,11 +202,7 @@ function RootApp() {
         <div className="w-full max-w-md space-y-4">
           <div className="text-center">
             <div className="w-56 h-56 mx-auto rounded-[32px] bg-gradient-to-br from-slate-900 to-black flex items-center justify-center shadow-2xl shadow-indigo-500/30 border border-slate-800">
-              <img
-                src="/creatyv image.png"
-                alt="DentalConnect"
-                className="w-44 h-44 object-contain drop-shadow-2xl"
-              />
+              <span className="text-white font-black text-3xl">DentalConnect</span>
             </div>
           </div>
 
@@ -393,17 +389,6 @@ function RootApp() {
         </nav>
 
         <div className="p-3 space-y-0.5" style={{borderTop: '1px solid #1e293b'}}>
-          <button
-            onClick={() => {setTab('settings'); if(isMobile) setSidebar(false);}}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 rounded-lg transition ${
-              tab === 'settings'
-                ? 'text-white border-2 border-indigo-500/50 bg-indigo-500/10'
-                : 'text-slate-400 hover:text-white border-2 border-transparent transition-all duration-200 hover:bg-[#1c1f26]'
-            }`}
-          >
-            <Settings size={19} strokeWidth={2} />
-            <span className="font-semibold text-sm">Configuración</span>
-          </button>
           <button onClick={() => setAuth(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-900/30 transition text-slate-400 hover:text-red-400">
             <LogOut size={19} />
             <span className="font-semibold text-sm">Salir</span>
@@ -1090,36 +1075,30 @@ function RootApp() {
                   <div key={idx} className={`rounded-2xl p-4 flex flex-col gap-3 transition border ${isDark ? 'bg-slate-900 border-slate-800 hover:border-slate-700' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500/40 to-teal-500/40 text-white font-bold flex items-center justify-center">
+                        <div className={`w-10 h-10 rounded-full ${isDark ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700'} font-bold flex items-center justify-center`}>
                           {patient.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-white font-semibold">{patient.name}</p>
-                          <p className="text-xs text-slate-400">{patient.status === 'nuevo' ? 'Nuevo' : 'Seguimiento'} · {patient.lastVisit}</p>
+                          <p className={`${textMain} font-semibold`}>{patient.name}</p>
+                          <p className={`${textSub} text-xs`}>{patient.status === 'nuevo' ? 'Nuevo' : 'Seguimiento'} · {patient.lastVisit}</p>
                         </div>
                       </div>
-                      <span className={`
-                        text-xs px-2 py-1 rounded-full border
-                        ${patient.status === 'activo' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' : ''}
-                        ${patient.status === 'nuevo' ? 'bg-indigo-500/20 text-indigo-200 border-indigo-500/40' : ''}
-                        ${patient.status === 'pendiente' ? 'bg-amber-500/20 text-amber-200 border-amber-500/40' : ''}
-                        ${patient.status === 'inactivo' ? 'bg-slate-800 text-slate-300 border-slate-700' : ''}
-                      `}>
+                      <span className={`text-xs px-2 py-1 rounded-full border ${isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-slate-200 bg-white text-slate-700'}`}>
                         {patient.status}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-slate-300">
-                      <Phone size={14} className="text-teal-300" />
+                    <div className={`flex items-center gap-3 text-sm ${isDark ? 'text-slate-100' : 'text-slate-700'}`}>
+                      <Phone size={14} className={isDark ? 'text-slate-300' : 'text-slate-500'} />
                       <span>{patient.phone}</span>
-                      <MapPin size={14} className="text-indigo-300 ml-2" />
+                      <MapPin size={14} className={`${isDark ? 'text-slate-300' : 'text-slate-500'} ml-2`} />
                       <span>{patient.location}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2 text-slate-400">
+                      <div className={`flex items-center gap-2 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
                         <Info size={14} />
                         <span>{patient.notes}</span>
                       </div>
-                      <button className="px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-200 border border-indigo-500/40 text-xs font-semibold">
+                      <button className={`px-3 py-1.5 rounded-lg border text-xs font-semibold ${isDark ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-slate-200 bg-white text-slate-700'}`}>
                         Enviar recordatorio
                       </button>
                     </div>
