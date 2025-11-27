@@ -432,21 +432,39 @@ function RootApp() {
       {/* TOP BAR MÓVIL - SIMPLE */}
       {isMobile && (
         <div 
-          className="fixed top-0 left-0 right-0 z-50 flex items-center px-3 h-[44px]"
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 h-[52px]"
           style={{
             backgroundColor: '#ffffff',
             borderBottom: '1px solid #e2e8f0',
-            paddingTop: 'env(safe-area-inset-top)',
-            paddingBottom: '4px'
+            paddingTop: 'calc(env(safe-area-inset-top) + 4px)',
+            paddingBottom: '6px'
           }}
         >
           <button
             onClick={() => setSidebar(!sidebar)}
-            className="p-2 rounded-lg border border-slate-200 text-slate-700 hover:border-slate-300 transition bg-white"
+            className="p-2 rounded-lg border border-slate-200 text-slate-700 hover:border-slate-300 transition bg-white flex-shrink-0"
             aria-label="Menú"
           >
             <Menu size={18} />
           </button>
+          <div className="flex items-center gap-2 overflow-hidden">
+            {[
+              { label: 'Próxima', value: '10:00', icon: Clock },
+              { label: 'Ocupación', value: `${timeSlotsPercent[0]}%`, icon: TrendingUp },
+              { label: 'Hoy', value: new Date().toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }), icon: Calendar }
+            ].map((chip) => (
+              <div
+                key={chip.label}
+                className="flex items-center gap-1 px-2 py-1 rounded-xl border border-slate-200 bg-white text-[11px] text-slate-700 shadow-sm"
+              >
+                <chip.icon size={14} />
+                <div className="leading-tight">
+                  <p className="text-[10px] text-slate-500">{chip.label}</p>
+                  <p className="font-semibold">{chip.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -516,7 +534,7 @@ function RootApp() {
       <div 
         className={`flex-1 flex flex-col ${!isMobile ? 'ml-64' : ''}`} 
         style={isMobile ? {
-          paddingTop: 'calc(44px + env(safe-area-inset-top) + 6px)',
+          paddingTop: 'calc(52px + env(safe-area-inset-top) + 6px)',
           paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))'
         } : { paddingTop: '12px', paddingBottom: '16px' }}
       >
