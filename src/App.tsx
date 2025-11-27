@@ -456,8 +456,8 @@ function RootApp() {
           {isMobile && (
             <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSidebar(false)}></div>
           )}
-          <div className={`${isMobile ? 'fixed top-0 left-0 h-screen' : 'fixed left-0 top-0 h-screen'} w-64 text-white flex flex-col shadow-xl z-50`} style={{backgroundColor: '#13151a', borderRight: '1px solid #1e293b'}}>
-        <div className="p-5" style={{borderBottom: '1px solid #1e293b'}}>
+          <div className={`${isMobile ? 'fixed top-0 left-0 h-screen' : 'fixed left-0 top-0 h-screen'} w-64 text-white flex flex-col shadow-xl z-50`} style={{backgroundColor: '#13151a', borderRight: '1e293b'}}>
+        <div className="p-5" style={{borderBottom: '1px solid #1e293b', paddingTop: 'calc(env(safe-area-inset-top) + 8px)'}}>
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-teal-500 rounded-xl flex items-center justify-center font-bold text-white text-base flex-shrink-0 shadow-lg shadow-indigo-500/30">
               {clinic.name.charAt(0)}
