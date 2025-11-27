@@ -1,36 +1,54 @@
-const CACHE_NAME = 'creatyv-dental-v1';
-const urlsToCache = [
-  '/',
-  '/index.html'
-];
+const CACHE_NAME = 'creatyv-dental-v3';
 
-// Install
+// Install: no pre-cache hashed assets to avoid stale references
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-  );
+  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE_NAME));
 });
 
-// Fetch
+// Network-first for navigations (index.html), cache-first for static assets
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+
+  // HTML/navigation requests
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Static assets: try cache, else network, then cache the fresh copy
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => response || fetch(event.request))
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        return response;
+      });
+    })
   );
 });
 
-// Activate
+// Activate: clear old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
+          return undefined;
         })
-      );
-    })
+      )
+    ).then(() => self.clients.claim())
   );
 });
