@@ -432,12 +432,12 @@ function RootApp() {
       {/* TOP BAR MÓVIL - SIMPLE */}
       {isMobile && (
         <div 
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 h-[44px]"
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 h-[46px]"
           style={{
             backgroundColor: '#ffffff',
             borderBottom: '1px solid #e2e8f0',
             paddingTop: 'calc(env(safe-area-inset-top) + 2px)',
-            paddingBottom: '2px'
+            paddingBottom: '4px'
           }}
         >
           <button
@@ -448,18 +448,18 @@ function RootApp() {
             <Menu size={18} />
           </button>
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex items-center gap-1 px-2 py-1 rounded-xl border border-slate-200 bg-white text-[10px] text-slate-700 shadow-sm">
+            <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-[12px] text-slate-700 shadow-sm">
               <TrendingUp size={12} />
               <div className="leading-tight">
-                <p className="text-[9px] text-slate-500">Ocupación</p>
-                <p className="font-semibold">{timeSlotsPercent[0]}%</p>
+                <p className="text-[10px] text-slate-500">Ocupación</p>
+                <p className="font-semibold text-sm">{timeSlotsPercent[0]}%</p>
               </div>
             </div>
-            <div className="flex items-center gap-1 px-2 py-1 rounded-xl border border-slate-200 bg-white text-[10px] text-slate-700 shadow-sm">
-              <span className="text-[9px] text-slate-500">Tema</span>
+            <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-[12px] text-slate-700 shadow-sm">
+              <span className="text-[11px] text-slate-500">Tema</span>
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="px-2 py-0.5 rounded-lg border border-slate-200 text-[11px] text-slate-700 bg-white"
+                className="px-2 py-0.5 rounded-lg border border-slate-200 text-[12px] text-slate-700 bg-white"
               >
                 {theme === 'dark' ? '🌙' : '☀️'}
               </button>
