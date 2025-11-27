@@ -201,24 +201,26 @@ function RootApp() {
       <div className="min-h-screen flex items-center justify-center p-4" style={{backgroundColor: '#0a0b0d'}}>
         <div className="w-full max-w-md space-y-4">
           <div className="text-center">
-            <div className="w-56 h-56 mx-auto rounded-[32px] bg-gradient-to-br from-slate-900 to-black flex items-center justify-center shadow-2xl shadow-indigo-500/30 border border-slate-800">
-              <span className="text-white font-black text-3xl">DentalConnect</span>
+            <div className="mx-auto relative inline-flex px-6 py-4">
+              <div className="absolute inset-0 blur-3xl bg-indigo-500/30 rounded-full"></div>
+              <span className="relative text-white font-black text-3xl tracking-tight" style={{fontFamily: 'Helvetica Neue, Inter, sans-serif'}}>
+                DentalConnect
+              </span>
             </div>
-          </div>
+            </div>
 
             <div className="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl p-5 backdrop-blur">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-white font-semibold text-lg">DentalConnect</p>
+              <div className="flex items-center justify-end mb-4">
                 <button
                   type="button"
                   onClick={() => setLoginMode(!loginMode)}
                   className="text-xs text-sky-300 hover:text-sky-200"
                 >
-                {loginMode ? 'Crear cuenta' : 'Ya tengo cuenta'}
-              </button>
-            </div>
+                  {loginMode ? 'Crear cuenta' : 'Ya tengo cuenta'}
+                </button>
+              </div>
 
-            {!loginMode ? (
+              {!loginMode ? (
               <form onSubmit={register} className="space-y-3">
                 <input
                   type="text"
