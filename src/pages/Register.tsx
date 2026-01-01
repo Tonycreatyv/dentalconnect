@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const Login = () => {
+const Register = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { signIn, user } = useAuth();
+  const { signUp, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -13,18 +12,19 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/";
-      navigate(redirectTo, { replace: true });
+      navigate("/", { replace: true });
     }
-  }, [user, location.state, navigate]);
+  }, [user, navigate]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
-    const message = await signIn(email, password);
+    const message = await signUp(email, password);
     if (message) {
       setError(message);
+    } else {
+      navigate("/", { replace: true });
     }
     setLoading(false);
   };
@@ -33,12 +33,12 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6">
       <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-8 shadow-card">
         <p className="text-xs uppercase tracking-[0.2em] text-teal-300">Creatyv</p>
-        <h1 className="mt-3 text-2xl font-semibold text-slate-100">Welcome back</h1>
-        <p className="mt-2 text-sm text-slate-400">Sign in to manage your dental operations.</p>
+        <h1 className="mt-3 text-2xl font-semibold text-slate-100">Create your workspace</h1>
+        <p className="mt-2 text-sm text-slate-400">Start securing your patient conversations.</p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="text-xs font-medium text-slate-400">Email</label>
+            <label className="text-xs font-medium text-slate-400">Work email</label>
             <input
               type="email"
               required
@@ -63,14 +63,14 @@ const Login = () => {
             disabled={loading}
             className="w-full rounded-xl bg-teal-500 py-3 text-sm font-semibold text-slate-950 transition hover:bg-teal-400 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
         <p className="mt-6 text-sm text-slate-400">
-          New to DentalConnect?{" "}
-          <Link to="/register" className="text-teal-300 hover:text-teal-200">
-            Create an account
+          Already have access?{" "}
+          <Link to="/login" className="text-teal-300 hover:text-teal-200">
+            Sign in
           </Link>
         </p>
       </div>
@@ -78,4 +78,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

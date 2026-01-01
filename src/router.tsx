@@ -1,46 +1,38 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Layout } from "./layouts/Layout";
 
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-
-import ChatRoom from "./pages/ChatRoom";
-import ChatInbox from "./pages/ChatInbox";
-
-import Appointments from "./pages/Appointments";
+import Conversations from "./pages/Conversations";
 import Patients from "./pages/Patients";
-import Payments from "./pages/Payments";
-import Reports from "./pages/Reports";
+import PatientDetail from "./pages/PatientDetail";
+import Appointments from "./pages/Appointments";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import MetaCallback from "./pages/MetaCallback";
 
-export default function Router() {
+export const AppRoutes = () => {
   return (
-    <BrowserRouter>
-      <Routes>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-        {/* AUTH */}
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="/conversations" element={<Conversations />} />
+          <Route path="/patients" element={<Patients />} />
+          <Route path="/patients/:patientId" element={<PatientDetail />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/integrations/meta/callback" element={<MetaCallback />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
+      </Route>
 
-        {/* DASHBOARD */}
-        <Route path="/dashboard" element={<Dashboard />} />
-
-        {/* CHAT */}
-        <Route path="/chatinbox" element={<ChatInbox />} />
-        
-        {/* ESTA ES LA CORRECTA: ChatRoom necesita :phone */}
-        <Route path="/chatroom/:phone" element={<ChatRoom />} />
-
-        {/* SECCIONES DEL SISTEMA */}
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/patients" element={<Patients />} />
-        <Route path="/payments" element={<Payments />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/settings" element={<Settings />} />
-
-      </Routes>
-    </BrowserRouter>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
-}
+};

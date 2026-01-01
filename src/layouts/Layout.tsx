@@ -1,21 +1,17 @@
+import { Outlet } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
-import Topbar from "../components/Topbar";
+import { Topbar } from "../components/Topbar";
 
-export default function Layout({ children }: any) {
+export const Layout = () => {
   return (
-    <div className="flex h-screen w-full bg-gray-50 text-gray-900">
-      {/* SIDEBAR */}
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <Sidebar />
-
-      {/* MAIN CONTENT */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-1 flex-col">
         <Topbar />
-
-        {/* PAGE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {children}
-        </div>
+        <main className="flex-1 bg-slate-950/80 px-8 py-6">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
-}
+};
